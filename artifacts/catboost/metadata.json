@@ -1,0 +1,7 @@
+{
+  "model_name": "catboost",
+  "input_type": "feature_engineered_raw",
+  "uses_ohe": false,
+  "threshold": 0.6966504688066307,
+  "notes": "CatBoost modeli feature engineering sonrasi ham tablo ve kategorik kolon isimleri ile calisir."
+}

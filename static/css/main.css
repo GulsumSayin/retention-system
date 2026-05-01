@@ -1,0 +1,979 @@
+/* ==========================================================================
+   main.css — Müşteri Tutundurma Zekâsı Platformu
+   Tasarım sistemi: Inter font, slate/blue renk paleti, card-based layout
+   ========================================================================== */
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html {
+  font-family: 'Inter', system-ui, sans-serif;
+  font-size: 15px;
+  color: #0f172a;
+  background: #f0f4f8;
+}
+
+body { display: flex; min-height: 100vh; overflow-x: hidden; }
+
+/* ==========================================================================
+   Sidebar — giriş animasyonu & collapse
+   ========================================================================== */
+@keyframes slideInLeft {
+  from { transform: translateX(-100%); opacity: 0; }
+  to   { transform: translateX(0);     opacity: 1; }
+}
+
+.sidebar {
+  width: 272px;
+  min-height: 100vh;
+  background: #0f172a;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  padding: 0 0 32px 0;
+  flex-shrink: 0;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow-y: auto;
+  overflow-x: hidden;
+  animation: slideInLeft 0.45s cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
+  transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+              padding 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+              opacity 0.3s ease;
+}
+
+.sidebar.collapsed {
+  width: 0;
+  padding: 0;
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* Sidebar başlık satırı */
+.sb-brand-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+/* Sidebar kapat butonu */
+.sb-collapse-btn {
+  background: #1e293b;
+  border: 1px solid #334155;
+  color: #94a3b8;
+  border-radius: 6px;
+  width: 28px;
+  height: 28px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: background 0.15s, color 0.15s;
+  margin-top: 2px;
+}
+.sb-collapse-btn:hover { background: #2563eb; color: white; border-color: #2563eb; }
+
+/* Kayan aç butonu — sidebar kapalıyken görünür */
+.sidebar-open-btn {
+  position: fixed;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 200;
+  background: #1d4ed8;
+  color: white;
+  border: none;
+  border-radius: 0 10px 10px 0;
+  width: 32px;
+  height: 64px;
+  cursor: pointer;
+  font-size: 1.1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 2px 0 12px rgba(29,78,216,0.35);
+  transition: background 0.15s, width 0.15s;
+}
+.sidebar-open-btn:hover { background: #1e40af; width: 36px; }
+
+.sb-brand {
+  padding: 22px 20px 14px;
+  border-bottom: 1px solid #1e293b;
+}
+.sb-brand-title {
+  font-size: 1rem;
+  font-weight: 800;
+  color: #e2e8f0;
+  letter-spacing: -0.02em;
+  line-height: 1.3;
+}
+.sb-brand-sub {
+  font-size: 0.68rem;
+  color: #475569;
+  margin-top: 3px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.sb-section-label {
+  font-size: 0.62rem;
+  font-weight: 700;
+  color: #475569;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  padding: 18px 20px 6px;
+  border-bottom: 1px solid #1e293b;
+  margin-bottom: 10px;
+}
+
+.sb-label {
+  display: block;
+  font-size: 0.75rem;
+  color: #94a3b8;
+  margin: 8px 20px 4px;
+}
+
+.sb-select, .sb-input {
+  display: block;
+  width: calc(100% - 40px);
+  margin: 0 20px 10px;
+  background: #1e293b;
+  border: 1px solid #334155;
+  border-radius: 7px;
+  color: #e2e8f0;
+  font-size: 0.8rem;
+  padding: 8px 10px;
+  outline: none;
+  font-family: inherit;
+  transition: border-color 0.15s;
+}
+.sb-select:focus, .sb-input:focus { border-color: #2563eb; }
+.sb-select option { background: #1e293b; }
+
+.sb-radio-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 0 20px 10px;
+}
+.sb-radio {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.8rem;
+  color: #94a3b8;
+  cursor: pointer;
+}
+.sb-radio input[type="radio"] { accent-color: #2563eb; }
+.sb-radio input[type="radio"]:checked + span { color: #e2e8f0; }
+
+.sb-model-card {
+  margin: 4px 16px 6px;
+  background: #1e293b;
+  border-radius: 10px;
+  padding: 12px 14px;
+  border-left: 3px solid #2563eb;
+}
+.sb-model-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 4px 0;
+  border-bottom: 1px solid #0f172a;
+  font-size: 0.75rem;
+}
+.sb-model-row.last { border-bottom: none; }
+.sb-ml { color: #64748b; }
+.sb-mv { color: #e2e8f0; font-weight: 600; }
+.sb-mv.green { color: #4ade80; }
+.sb-mv.yellow { color: #fbbf24; }
+
+.sb-note {
+  margin: 14px 16px 0;
+  background: #0c1929;
+  border-radius: 8px;
+  padding: 12px 14px;
+  font-size: 0.72rem;
+  color: #475569;
+  line-height: 1.65;
+}
+.sb-note strong { color: #64748b; }
+
+/* Toggle switch — LLM etkinleştirme */
+.sb-toggle-wrap {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 20px 10px;
+}
+.sb-toggle {
+  position: relative;
+  display: inline-block;
+  width: 42px;
+  height: 24px;
+  flex-shrink: 0;
+}
+.sb-toggle input { opacity: 0; width: 0; height: 0; }
+.sb-toggle-track {
+  position: absolute;
+  inset: 0;
+  background: #334155;
+  border-radius: 24px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.sb-toggle-track::before {
+  content: "";
+  position: absolute;
+  width: 18px;
+  height: 18px;
+  left: 3px;
+  top: 3px;
+  background: #94a3b8;
+  border-radius: 50%;
+  transition: transform 0.2s, background 0.2s;
+}
+.sb-toggle input:checked + .sb-toggle-track { background: #1d4ed8; }
+.sb-toggle input:checked + .sb-toggle-track::before {
+  transform: translateX(18px);
+  background: #fff;
+}
+.sb-toggle-label { font-size: 0.78rem; color: #94a3b8; line-height: 1.4; }
+.sb-llm-note {
+  margin: 0 16px 10px;
+  font-size: 0.68rem;
+  color: #334155;
+  line-height: 1.55;
+  padding: 7px 10px;
+  background: #0c1929;
+  border-radius: 6px;
+  border-left: 2px solid #1d4ed8;
+}
+
+/* ==========================================================================
+   Main content
+   ========================================================================== */
+.main {
+  flex: 1;
+  padding: 32px 36px 56px;
+  min-width: 0;
+  /* max-width kaldırıldı: sidebar açık/kapalı geçişinde içerik alanı dinamik genişler */
+}
+
+/* ==========================================================================
+   Başlık
+   ========================================================================== */
+.page-header { margin-bottom: 6px; }
+
+h1 {
+  font-size: 1.75rem;
+  font-weight: 800;
+  color: #0f172a;
+  letter-spacing: -0.035em;
+  line-height: 1.2;
+}
+h2 {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: #1e293b;
+  margin-bottom: 10px;
+}
+
+.page-sub {
+  color: #64748b;
+  font-size: 0.88rem;
+  margin: 6px 0 10px;
+  line-height: 1.6;
+}
+
+.badge-strip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 8px 0 0;
+}
+.badge {
+  display: inline-block;
+  border-radius: 5px;
+  padding: 3px 10px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  border-width: 1px;
+  border-style: solid;
+}
+.badge.blue   { background: #eff6ff; color: #1d4ed8; border-color: #bfdbfe; }
+.badge.green  { background: #f0fdf4; color: #15803d; border-color: #bbf7d0; }
+.badge.amber  { background: #fffbeb; color: #92400e; border-color: #fde68a; }
+.badge.purple { background: #faf5ff; color: #6b21a8; border-color: #e9d5ff; }
+.badge.red    { background: #fef2f2; color: #b91c1c; border-color: #fecaca; }
+
+.divider {
+  border: none;
+  border-top: 1px solid #e2e8f0;
+  margin: 28px 0;
+}
+
+/* ==========================================================================
+   Dosya Yükleme
+   ========================================================================== */
+.upload-section { margin-bottom: 4px; }
+
+.upload-area {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  border: 2px dashed #cbd5e1;
+  border-radius: 14px;
+  padding: 32px 24px;
+  background: white;
+  cursor: pointer;
+  transition: border-color 0.2s, background 0.2s;
+  text-align: center;
+}
+.upload-area:hover { border-color: #2563eb; background: #eff6ff; }
+.upload-area.drag-over { border-color: #1d4ed8; background: #dbeafe; }
+
+.upload-icon { font-size: 2rem; }
+.upload-text { font-size: 0.95rem; font-weight: 600; color: #374151; }
+.upload-hint { font-size: 0.78rem; color: #94a3b8; }
+
+.file-input { display: none; }
+
+.file-info {
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  border-radius: 8px;
+  padding: 10px 16px;
+  margin-top: 10px;
+  font-size: 0.83rem;
+  color: #166534;
+}
+
+/* ==========================================================================
+   Butonlar
+   ========================================================================== */
+.btn-primary {
+  background: #1d4ed8;
+  color: white;
+  border: none;
+  border-radius: 9px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  padding: 12px 24px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: background 0.15s, transform 0.1s;
+  font-family: inherit;
+}
+.btn-primary:hover  { background: #1e40af; }
+.btn-primary:active { transform: scale(0.99); }
+.btn-primary:disabled { background: #94a3b8; cursor: not-allowed; }
+.btn-full { width: 100%; margin-top: 12px; }
+
+/* ==========================================================================
+   İlerleme çubuğu
+   ========================================================================== */
+.progress-wrap { margin: 16px 0; }
+.progress-bar-bg {
+  height: 6px;
+  background: #e2e8f0;
+  border-radius: 99px;
+  overflow: hidden;
+}
+.progress-bar {
+  height: 100%;
+  background: linear-gradient(90deg, #1d4ed8, #60a5fa);
+  border-radius: 99px;
+  width: 0%;
+  transition: width 0.5s ease;
+}
+.progress-label {
+  font-size: 0.78rem;
+  color: #64748b;
+  margin-top: 6px;
+  text-align: center;
+}
+
+/* ==========================================================================
+   Spinner
+   ========================================================================== */
+.spinner {
+  width: 16px;
+  height: 16px;
+  border: 2.5px solid rgba(255,255,255,0.4);
+  border-top-color: white;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ==========================================================================
+   Hata paneli
+   ========================================================================== */
+.error-panel {
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-left: 4px solid #ef4444;
+  border-radius: 9px;
+  padding: 14px 18px;
+  font-size: 0.85rem;
+  color: #b91c1c;
+  margin: 12px 0;
+}
+
+/* ==========================================================================
+   Panel kartları
+   ========================================================================== */
+.panel {
+  background: white;
+  border-radius: 14px;
+  padding: 20px 22px;
+  border-top: 4px solid #2563eb;
+  box-shadow: 0 1px 8px rgba(0,0,0,0.04);
+  margin-bottom: 12px;
+  font-size: 0.875rem;
+  color: #374151;
+  line-height: 1.9;
+}
+.panel.blue-top  { border-top-color: #2563eb; }
+.panel.green-top { border-top-color: #16a34a; }
+.panel.red-top   { border-top-color: #ef4444; }
+.panel.gray-top  { border-top-color: #64748b; }
+
+.panel-title {
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.09em;
+  margin-bottom: 10px;
+}
+
+/* ==========================================================================
+   Grid yardımcıları
+   ========================================================================== */
+.grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+@media (max-width: 900px) { .grid-2 { grid-template-columns: 1fr; } }
+
+/* ==========================================================================
+   KPI kartları
+   ========================================================================== */
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  margin-bottom: 4px;
+}
+@media (max-width: 1000px) { .kpi-grid { grid-template-columns: repeat(2, 1fr); } }
+
+.kpi-card {
+  background: white;
+  border-radius: 12px;
+  padding: 16px 18px;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+}
+.kpi-label {
+  font-size: 0.72rem;
+  color: #64748b;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  margin-bottom: 6px;
+}
+.kpi-value {
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: #0f172a;
+  letter-spacing: -0.02em;
+}
+.kpi-hint {
+  font-size: 0.68rem;
+  color: #94a3b8;
+  margin-top: 3px;
+}
+
+/* ==========================================================================
+   Grafik kartları
+   ========================================================================== */
+.chart-card {
+  background: white;
+  border-radius: 14px;
+  padding: 16px 18px;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 1px 8px rgba(0,0,0,0.04);
+}
+
+/* ==========================================================================
+   Tablo
+   ========================================================================== */
+.table-wrap {
+  background: white;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+  overflow-x: auto;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+}
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.78rem;
+}
+.data-table th {
+  background: #f8fafc;
+  color: #475569;
+  font-weight: 600;
+  padding: 10px 12px;
+  text-align: left;
+  border-bottom: 2px solid #e2e8f0;
+  white-space: nowrap;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+.data-table td {
+  padding: 8px 12px;
+  border-bottom: 1px solid #f1f5f9;
+  color: #374151;
+  max-width: 220px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.data-table tr:last-child td { border-bottom: none; }
+.data-table tr:hover td { background: #f8fafc; }
+
+/* Risk rozet renkleri satırda */
+td .risk-high { color: #b91c1c; font-weight: 600; }
+td .risk-mid  { color: #92400e; font-weight: 600; }
+td .risk-low  { color: #166534; font-weight: 600; }
+
+/* ==========================================================================
+   A/B Testi kartları
+   ========================================================================== */
+.ab-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-bottom: 14px;
+}
+@media (max-width: 900px) { .ab-grid { grid-template-columns: 1fr 1fr; } }
+
+.ab-stat-card {
+  background: white;
+  border-radius: 12px;
+  padding: 16px 18px;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+}
+.ab-stat-label {
+  font-size: 0.68rem;
+  color: #64748b;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: 5px;
+}
+.ab-stat-value {
+  font-size: 1.5rem;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+}
+.ab-stat-value.success { color: #16a34a; }
+.ab-stat-value.warning { color: #d97706; }
+.ab-stat-value.neutral { color: #1d4ed8; }
+
+.ab-stat-sub {
+  font-size: 0.72rem;
+  color: #94a3b8;
+  margin-top: 3px;
+}
+
+.ab-interpretation {
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  border-left: 4px solid #16a34a;
+  border-radius: 10px;
+  padding: 14px 18px;
+  font-size: 0.85rem;
+  color: #166534;
+  line-height: 1.75;
+  margin-top: 4px;
+}
+.ab-interpretation.warning {
+  background: #fffbeb;
+  border-color: #fde68a;
+  border-left-color: #d97706;
+  color: #92400e;
+}
+
+/* ==========================================================================
+   Bölüm başlık alt yazıları
+   ========================================================================== */
+.section-caption {
+  font-size: 0.78rem;
+  color: #64748b;
+  margin-bottom: 12px;
+  line-height: 1.65;
+}
+code {
+  background: #f1f5f9;
+  border: 1px solid #e2e8f0;
+  border-radius: 4px;
+  padding: 1px 5px;
+  font-size: 0.8em;
+}
+
+/* ==========================================================================
+   Geçmiş tablo
+   ========================================================================== */
+.history-table-wrap {
+  background: white;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+  overflow-x: auto;
+  margin-top: 12px;
+}
+
+/* ==========================================================================
+   Yardımcı sınıflar
+   ========================================================================== */
+.hidden { display: none !important; }
+.mt-12  { margin-top: 12px; }
+.mt-20  { margin-top: 20px; }
+
+/* ==========================================================================
+   Info icon & tooltip
+   ========================================================================== */
+.info-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  font-size: 0.7rem;
+  font-weight: 700;
+  cursor: help;
+  vertical-align: middle;
+  margin-left: 4px;
+  user-select: none;
+  transition: opacity 0.15s;
+}
+.info-icon:hover { opacity: 0.7; }
+
+/* Koyu arka plan üzerinde (h2, section label) */
+.info-icon--dark {
+  background: #e2e8f0;
+  color: #475569;
+  border: 1px solid #cbd5e1;
+}
+
+/* Açık arka plan üzerinde (sidebar section label) */
+.info-icon--light {
+  background: #1e293b;
+  color: #64748b;
+  border: 1px solid #334155;
+}
+
+/* Tooltip balonu */
+.tooltip-bubble {
+  position: absolute;
+  z-index: 9999;
+  max-width: 280px;
+  background: #0f172a;
+  color: #e2e8f0;
+  font-size: 0.75rem;
+  line-height: 1.5;
+  padding: 9px 13px;
+  border-radius: 8px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.25);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+.tooltip-bubble.visible { opacity: 1; }
+
+/* ==========================================================================
+   LLM Yorum Paneli
+   ========================================================================== */
+.llm-insights-wrap {
+  background: #f8faff;
+  border: 1px solid #bfdbfe;
+  border-left: 4px solid #2563eb;
+  border-radius: 14px;
+  padding: 20px 22px;
+  margin-bottom: 16px;
+}
+
+.llm-insights-title {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #1e3a5f;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+
+.llm-count {
+  font-size: 0.72rem;
+  font-weight: 500;
+  color: #2563eb;
+  background: #dbeafe;
+  border-radius: 20px;
+  padding: 2px 10px;
+}
+
+.llm-insights-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 12px;
+}
+
+.llm-insight-card {
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 14px 16px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+}
+
+.llm-insight-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.llm-badge {
+  font-size: 0.68rem;
+  font-weight: 600;
+  background: #eff6ff;
+  color: #1d4ed8;
+  border: 1px solid #bfdbfe;
+  border-radius: 4px;
+  padding: 2px 8px;
+}
+
+.risk-tag-high {
+  font-size: 0.68rem;
+  font-weight: 600;
+  background: #fef2f2;
+  color: #b91c1c;
+  border: 1px solid #fecaca;
+  border-radius: 4px;
+  padding: 2px 8px;
+}
+
+.risk-tag-mid {
+  font-size: 0.68rem;
+  font-weight: 600;
+  background: #fffbeb;
+  color: #92400e;
+  border: 1px solid #fde68a;
+  border-radius: 4px;
+  padding: 2px 8px;
+}
+
+.llm-insight-meta {
+  font-size: 0.72rem;
+  color: #64748b;
+  margin-bottom: 8px;
+  line-height: 1.5;
+}
+
+.llm-insight-text {
+  font-size: 0.8rem;
+  color: #1e293b;
+  line-height: 1.65;
+  border-top: 1px solid #f1f5f9;
+  padding-top: 8px;
+  white-space: pre-wrap;
+}
+
+/* Tablodaki LLM hücresi — white-space td'den miras alınır (nowrap + ellipsis) */
+.llm-cell-text {
+  font-size: 0.75rem;
+  color: #1e3a5f;
+}
+
+/* Section label içindeki info icon override */
+.sb-section-label .info-icon {
+  margin-left: 5px;
+  width: 13px;
+  height: 13px;
+  font-size: 0.6rem;
+}
+
+/* ==========================================================================
+   Müşteri Bazlı Analizler kartları (tek sütun, tam genişlik)
+   ========================================================================== */
+.ci-wrap {
+  background: #f8faff;
+  border: 1px solid #bfdbfe;
+  border-left: 4px solid #2563eb;
+  border-radius: 14px;
+  padding: 20px 22px;
+}
+
+.ci-wrap-title {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #1e3a5f;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 4px;
+  flex-wrap: wrap;
+}
+
+/* Tek sütun liste — üst üste binme yok */
+.ci-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.ci-card {
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 16px 20px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+}
+
+.ci-header {
+  font-size: 0.65rem;
+  font-weight: 700;
+  color: #94a3b8;
+  letter-spacing: 0.1em;
+  margin-bottom: 4px;
+}
+
+.ci-title {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #0f172a;
+  margin-bottom: 8px;
+}
+
+.ci-badges {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-bottom: 10px;
+}
+
+.ci-text {
+  font-size: 0.83rem;
+  color: #374151;
+  line-height: 1.7;
+  border-top: 1px solid #f1f5f9;
+  padding-top: 10px;
+  margin-bottom: 12px;
+}
+
+.ci-metrics {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  font-size: 0.75rem;
+  color: #64748b;
+  border-top: 1px solid #f1f5f9;
+  padding-top: 10px;
+}
+
+.ci-metrics strong {
+  color: #0f172a;
+}
+
+/* ==========================================================================
+   Geçmiş analizler — collapsible
+   ========================================================================== */
+.collapsible-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.collapsible-btn {
+  background: #f1f5f9;
+  border: 1px solid #e2e8f0;
+  border-radius: 7px;
+  padding: 6px 14px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #475569;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+  white-space: nowrap;
+}
+.collapsible-btn:hover { background: #e2e8f0; color: #0f172a; }
+
+.collapsible-content {
+  overflow: hidden;
+  transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease;
+  max-height: 2000px;
+  opacity: 1;
+}
+.collapsible-content.collapsed {
+  max-height: 0;
+  opacity: 0;
+}
+
+/* ==========================================================================
+   İndirme butonları
+   ========================================================================== */
+.download-bar {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 14px 18px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+}
+
+.download-bar-label {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-right: 4px;
+}
+
+.btn-download {
+  background: #eff6ff;
+  color: #1d4ed8;
+  border: 1px solid #bfdbfe;
+  border-radius: 7px;
+  padding: 7px 14px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  transition: background 0.15s, border-color 0.15s;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+.btn-download:hover { background: #dbeafe; border-color: #93c5fd; }

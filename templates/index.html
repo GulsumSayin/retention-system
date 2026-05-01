@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Müşteri Tutundurma Zekâsı</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/static/css/main.css" />
+  <script src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>
+</head>
+<body>
+
+<!-- Sidebar kapalıyken kayan açma butonu -->
+<button class="sidebar-open-btn hidden" id="sidebarOpenBtn" title="Ayarları Aç">⚙</button>
+
+<!-- ===================================================================== -->
+<!-- SIDEBAR                                                                 -->
+<!-- ===================================================================== -->
+<aside class="sidebar" id="sidebar">
+  <div class="sb-brand">
+    <div class="sb-brand-header">
+      <div>
+        <div class="sb-brand-title">Tutundurma Zekâsı</div>
+        <div class="sb-brand-sub">ABONE YÖNETİM PLATFORMU</div>
+      </div>
+      <button class="sb-collapse-btn" id="sidebarCollapseBtn" title="Paneli Kapat">←</button>
+    </div>
+  </div>
+
+  <!-- ── Sistem Ayarları ───────────────────────────────────────── -->
+  <div class="sb-section-label">Analiz Ayarları</div>
+
+  <label class="sb-label" for="candidateRatio">
+    Odaklanılacak müşteri kitlesi
+    <span class="info-icon" data-tip="Analiz için kaç müşterinin inceleneceğini belirler. Küçük bir dilim seçmek, en yüksek riskli müşterilere odaklanır.">ⓘ</span>
+  </label>
+  <select id="candidateRatio" class="sb-select">
+    <option value="0.10">En riskli %10 — yüksek öncelik</option>
+    <option value="0.20" selected>En riskli %20 — dengeli yaklaşım</option>
+    <option value="0.30">En riskli %30 — geniş kapsam</option>
+  </select>
+
+  <label class="sb-label" for="maxBudget">
+    Kampanya bütçesi (TL)
+    <span class="info-icon" data-tip="Müşteri tutundurma aksiyonları için ayırdığınız toplam bütçe. Sistem bu kısıt dahilinde en yüksek geri dönüşü sağlayan müşterileri seçer.">ⓘ</span>
+  </label>
+  <input id="maxBudget" type="number" value="2000" min="0" step="100" class="sb-input" />
+
+  <!-- ── Model Seçimi ──────────────────────────────────────────── -->
+  <div class="sb-section-label">
+    Tahmin Motoru
+    <span class="info-icon info-icon--light" data-tip="İki farklı AI modeli arasında seçim yapabilirsiniz. Her ikisi de aynı verileri analiz eder; farklı algoritmalar kullanarak sonuçları karşılaştırabilirsiniz.">ⓘ</span>
+  </div>
+
+  <div class="sb-radio-group">
+    <label class="sb-radio">
+      <input type="radio" name="modelKey" value="catboost" checked />
+      <span>Model A — Önerilen</span>
+    </label>
+    <label class="sb-radio">
+      <input type="radio" name="modelKey" value="xgboost" />
+      <span>Model B — Karşılaştırma</span>
+    </label>
+  </div>
+
+  <!-- Model bilgi kartı — JS tarafından doldurulur -->
+  <div class="sb-model-card" id="modelCard">
+    <div class="sb-model-row"><span class="sb-ml">Algoritma</span><span class="sb-mv" id="mcAlgo">—</span></div>
+    <div class="sb-model-row"><span class="sb-ml">Karar eşiği</span><span class="sb-mv yellow" id="mcThreshold">—</span></div>
+    <div class="sb-model-row"><span class="sb-ml">ROC-AUC</span><span class="sb-mv green" id="mcRoc">—</span></div>
+    <div class="sb-model-row last"><span class="sb-ml">PR-AUC</span><span class="sb-mv green" id="mcPrauc">—</span></div>
+  </div>
+
+  <!-- ── Dil Modeli (LLM) ─────────────────────────────────────── -->
+  <div class="sb-section-label">
+    AI Yorum Asistanı
+    <span class="info-icon info-icon--light" data-tip="Aktif edildiğinde, yüksek riskli her müşteri için kişiselleştirilmiş yorum ve öneriler otomatik olarak üretilir. Analiz süresi biraz uzayabilir.">ⓘ</span>
+  </div>
+
+  <div class="sb-toggle-wrap">
+    <label class="sb-toggle" for="useLlm">
+      <input type="checkbox" id="useLlm" />
+      <span class="sb-toggle-track"></span>
+    </label>
+    <span class="sb-toggle-label">Müşteri yorumu üret</span>
+  </div>
+  <div class="sb-llm-note">
+    Aktif edildiğinde yüksek riskli müşteriler için kişisel
+    yorumlar ve öneriler otomatik oluşturulur.
+  </div>
+
+  <!-- ── Nasıl Çalışır? ───────────────────────────────────────── -->
+  <div class="sb-note">
+    <strong>Nasıl Çalışır?</strong><br>
+    Yüklenen müşteri verisi yapay zeka tarafından analiz edilir.
+    Kayıp riski yüksek müşteriler önceliklendirilir ve bütçenize
+    en uygun aksiyon planı otomatik olarak oluşturulur.
+  </div>
+</aside>
+
+<!-- ===================================================================== -->
+<!-- MAIN                                                                    -->
+<!-- ===================================================================== -->
+<main class="main" id="main">
+
+  <!-- ── Başlık ────────────────────────────────────────────────── -->
+  <header class="page-header">
+    <h1>Müşteri Tutundurma Zekâsı Platformu</h1>
+    <p class="page-sub">
+      Müşteri kaybı riski tahmini &nbsp;·&nbsp; Yaşam boyu değer analizi &nbsp;·&nbsp;
+      Bütçe kısıtlı aksiyon planlaması &nbsp;·&nbsp;
+      Açıklanabilir AI içgörüleri &nbsp;·&nbsp; Strateji performans karşılaştırması
+    </p>
+    <div class="badge-strip">
+      <span class="badge blue">Yapay Zeka Destekli</span>
+      <span class="badge blue">İkili Model Karşılaştırma</span>
+      <span class="badge green">Açıklanabilir AI</span>
+      <span class="badge green">Kişiselleştirilmiş Aksiyon</span>
+      <span class="badge amber">Bütçe Optimizasyonu</span>
+      <span class="badge amber">Duyarlılık Analizi</span>
+      <span class="badge purple">İstatistiksel Doğrulama</span>
+      <span class="badge purple">Strateji Karşılaştırma</span>
+    </div>
+  </header>
+
+  <hr class="divider" />
+
+  <!-- ── Dosya Yükleme ─────────────────────────────────────────── -->
+  <section class="upload-section">
+    <label for="fileInput" class="upload-area" id="uploadArea">
+      <div class="upload-icon">⬆</div>
+      <div class="upload-text">Müşteri verilerinizi <strong>CSV</strong> formatında yükleyin</div>
+      <div class="upload-hint">Desteklenen alanlar: abonelik süresi, aylık ücret, toplam ücret, sözleşme türü, ödeme yöntemi, hizmet bilgileri</div>
+      <input type="file" id="fileInput" accept=".csv" class="file-input" />
+    </label>
+    <div id="fileInfo" class="file-info hidden"></div>
+    <button id="analyzeBtn" class="btn-primary btn-full hidden">
+      <span id="btnText">Analizi Başlat</span>
+      <span id="btnSpinner" class="spinner hidden"></span>
+    </button>
+  </section>
+
+  <!-- ── İlerleme çubuğu ───────────────────────────────────────── -->
+  <div id="progressWrap" class="progress-wrap hidden">
+    <div class="progress-bar-bg"><div class="progress-bar" id="progressBar"></div></div>
+    <div class="progress-label" id="progressLabel">İşleniyor...</div>
+  </div>
+
+  <!-- ── Hata paneli ───────────────────────────────────────────── -->
+  <div id="errorPanel" class="error-panel hidden"></div>
+
+  <!-- ===================================================================== -->
+  <!-- SONUÇLAR — başta gizli, analiz sonrası gösterilir                     -->
+  <!-- ===================================================================== -->
+  <div id="resultsSection" class="hidden">
+
+    <!-- Portföy değerlendirmesi -->
+    <div class="panel blue-top" id="portfolioComment"></div>
+
+    <hr class="divider" />
+
+    <!-- Yönetici özeti -->
+    <h2>Yönetici Özeti</h2>
+    <div class="grid-2">
+      <div class="panel" id="portfolioRiskPanel"></div>
+      <div class="panel" id="optimizationPanel"></div>
+    </div>
+
+    <hr class="divider" />
+
+    <!-- KPI metrikleri — 8 kart -->
+    <h2>Temel Metrikler</h2>
+    <div class="kpi-grid" id="kpiGrid"></div>
+
+    <hr class="divider" />
+
+    <!-- Görsel analizler -->
+    <h2>İçgörüler ve Analizler</h2>
+    <p class="section-caption" id="chartCaption"></p>
+    <div class="grid-2">
+      <div class="chart-card"><div id="chartRiskDonut"></div></div>
+      <div class="chart-card"><div id="chartActionBar"></div></div>
+    </div>
+    <div class="chart-card" style="margin-top:12px">
+      <div id="chartClvScatter"></div>
+    </div>
+    <div class="chart-card" id="roiCard" style="margin-top:12px">
+      <div id="chartRoiDist"></div>
+    </div>
+
+    <!-- Faktörler / SHAP -->
+    <div id="shapSection" class="hidden">
+      <hr class="divider" />
+      <h2>
+        Müşteri Kaybını Etkileyen Faktörler
+        <span class="info-icon info-icon--dark" data-tip="Bu grafik, müşterilerin ayrılma kararını en çok etkileyen unsurları önem sırasına göre göstermektedir. Daha uzun çubuklar, o faktörün kararı daha güçlü etkilediği anlamına gelir.">ⓘ</span>
+      </h2>
+      <p class="section-caption">
+        Aşağıdaki faktörler, müşteri kaybı riskini artıran veya azaltan unsurları
+        büyükten küçüğe sıralamaktadır. Hangi konulara odaklanmanız gerektiğini gösterir.
+      </p>
+      <div class="chart-card"><div id="chartShapBar"></div></div>
+    </div>
+
+    <hr class="divider" />
+
+    <!-- Aday müşteri tablosu -->
+    <h2 id="candidateTitle">Riskli Müşteri Listesi</h2>
+    <p class="section-caption">
+      Müşteriler, kayıp riski ve beklenen finansal etki dikkate alınarak öncelik sırasına göre sıralanmıştır.
+      Her müşteri için önerilen aksiyon ve iletişim kanalı gösterilmektedir.
+    </p>
+    <div class="table-wrap" id="candidateTableWrap"></div>
+
+    <hr class="divider" />
+
+    <!-- Optimizasyon tablosu -->
+    <h2 id="optimizationTitle">Aksiyon Planı — Seçilen Müşteriler</h2>
+    <p class="section-caption">
+      Kampanya bütçenizi en verimli şekilde kullanmak için seçilen müşteriler ve önerilen aksiyonlar aşağıda listelenmiştir.
+    </p>
+    <div class="table-wrap" id="optimizedTableWrap"></div>
+
+    <!-- Müşteri Bazlı Analizler — her zaman görünür -->
+    <div id="customerInsightPanel" class="hidden" style="margin-top:20px"></div>
+
+    <!-- İndirme butonları — analiz sonrası gösterilir -->
+    <div id="downloadSection" class="hidden" style="margin-top:16px">
+      <div class="download-bar">
+        <span class="download-bar-label">Çıktıları İndir</span>
+        <button class="btn-download" id="dlCandidates" title="Riskli müşteri listesini CSV olarak indir">
+          ⬇ Riskli Müşteri Listesi
+        </button>
+        <button class="btn-download" id="dlOptimized" title="Aksiyon planını CSV olarak indir">
+          ⬇ Aksiyon Planı
+        </button>
+        <button class="btn-download" id="dlComparison" title="Strateji karşılaştırmasını CSV olarak indir">
+          ⬇ Strateji Karşılaştırması
+        </button>
+      </div>
+    </div>
+
+    <hr class="divider" />
+
+    <!-- Strateji karşılaştırması -->
+    <h2>
+      Strateji Karşılaştırması
+      <span class="info-icon info-icon--dark" data-tip="AI destekli kişiselleştirilmiş strateji ile genel yaklaşımlar arasındaki net finansal fark karşılaştırılmaktadır. En yüksek net faydayı sağlayan strateji öne çıkarılır.">ⓘ</span>
+    </h2>
+    <p class="section-caption">
+      AI destekli kişiselleştirilmiş strateji ile geleneksel yaklaşımların net finansal
+      katkısı arasındaki fark bu bölümde gösterilmektedir.
+    </p>
+    <div class="chart-card"><div id="chartStrategyComp"></div></div>
+    <div class="table-wrap" id="compTableWrap" style="margin-top:12px"></div>
+    <div class="panel" id="strategyComment" style="margin-top:12px"></div>
+
+    <!-- En İyi Senaryoyu Bul (A/B Test) -->
+    <hr class="divider" />
+    <h2>
+      En İyi Senaryoyu Bul
+      <span class="info-icon info-icon--dark" data-tip="Bu bölüm, AI destekli stratejinizin geleneksel yaklaşımlara kıyasla gerçekten daha iyi performans gösterip göstermediğini istatistiksel olarak doğrular. 'Doğrulandı' mesajı, farkın tesadüfi olmadığını gösterir.">ⓘ</span>
+    </h2>
+    <p class="section-caption">
+      AI destekli strateji ile geleneksel yaklaşım arasındaki net fayda farkı
+      istatistiksel olarak karşılaştırılmaktadır. Güvenilir sonuçlar için yeterli
+      veri büyüklüğü gereklidir.
+    </p>
+    <div id="abTestSection"></div>
+
+  </div><!-- /resultsSection -->
+
+  <!-- ===================================================================== -->
+  <!-- GEÇMİŞ ANALİZLER — sayfa yüklendiğinde doldurulur                    -->
+  <!-- ===================================================================== -->
+  <hr class="divider" id="historyDivider" />
+  <section id="historySection">
+    <div class="collapsible-header" id="historyToggle">
+      <h2 style="margin:0">Geçmiş Analizler</h2>
+      <button class="collapsible-btn" id="historyToggleBtn" aria-expanded="false">
+        <span id="historyToggleIcon">▼</span> Göster
+      </button>
+    </div>
+    <div id="historyContent" class="collapsible-content collapsed">
+      <p class="section-caption" style="margin-top:10px">
+        Daha önce çalıştırılan tüm analizler burada listelenmektedir.
+        Zaman içindeki net fayda ve performans trendlerini takip edebilirsiniz.
+      </p>
+      <div class="chart-card"><div id="chartHistory"></div></div>
+      <div class="table-wrap" id="historyTableWrap" style="margin-top:12px"></div>
+    </div>
+  </section>
+
+</main><!-- /main -->
+
+<!-- Tooltip overlay -->
+<div class="tooltip-bubble" id="tooltipBubble"></div>
+
+<script src="/static/js/dashboard.js"></script>
+</body>
+</html>

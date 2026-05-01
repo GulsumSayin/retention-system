@@ -1,0 +1,38 @@
+# Müşteri Tutundurma Zekâsı Platformu — Bağımlılıklar
+# Python >= 3.10 gereklidir (union type hint söz dizimi: X | Y)
+#
+# Sürüm politikası: >= alt sınır, < majör sürüm üst sınırı
+# Belirli bir ortamı yeniden oluşturmak için:
+#   pip freeze > requirements.lock.txt
+
+# Veri ve sayısal işleme
+pandas>=2.0,<3.0
+numpy>=1.24,<2.0
+
+# Makine öğrenmesi
+scikit-learn>=1.3,<2.0
+xgboost>=2.0,<3.0
+catboost>=1.2,<2.0
+
+# XAI (Açıklanabilir Yapay Zekâ)
+shap>=0.44,<1.0
+
+# Web uygulamaları
+streamlit>=1.33,<2.0   # Mevcut Streamlit arayüzü (src/app.py)
+flask>=3.0,<4.0        # Yeni Flask arayüzü (flask_app.py)
+
+# İstatistiksel A/B testi (ABTestSimulator)
+scipy>=1.11,<2.0
+
+# Görselleştirme
+plotly>=5.15,<6.0
+matplotlib>=3.7,<4.0
+
+# Serialization / yardımcı
+joblib>=1.3,<2.0
+
+# LLM servis iletişimi (llama.cpp HTTP API)
+requests>=2.31,<3.0
+
+# Üretim web sunucusu
+gunicorn>=21.2,<23.0
