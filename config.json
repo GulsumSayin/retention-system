@@ -1,0 +1,9 @@
+{
+  "llama": {
+    "exe_path": "C:\\llama\\llama-server.exe",
+    "model_path": "C:\\llama\\models\\qwen2.5-3b-instruct-q5_k_m.gguf",
+    "port": 8080,
+    "context": 2048,
+    "max_wait_seconds": 30
+  }
+}

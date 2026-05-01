@@ -1,0 +1,35 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+
+# Sanal ortam
+venv/
+.venv/
+env/
+ENV/
+
+# Çalışma zamanı çıktıları (her analizde yeniden oluşturulur)
+outputs/
+
+# Geliştirme araçları
+.env
+.env.*
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Claude Code ayarları (kişisel)
+.claude/
+
+# Dağıtım
+*.egg-info/
+dist/
+build/
