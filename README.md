@@ -47,6 +47,7 @@ cd retention-system
 pip install -r requirements.txt
 python flask_app.py
 ```
+Not: Yerelde AI yorumlarını görmek için ilgili LLM model dosyasının (.gguf) yerelde mevcut olması gerekir.
 
 ### 2. Bulut Dağıtımı (Render / Railway)
 
