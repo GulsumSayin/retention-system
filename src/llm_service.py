@@ -216,12 +216,78 @@ def rule_based_strategy_comment(comparison_df: pd.DataFrame, advantage: dict) ->
 # LLMService
 # ===========================================================================
 # ---------------------------------------------------------------------------
-# Kural tabanlı tekil müşteri yorumu — LLM kullanılamadığında devreye girer
+# Profesyonel müşteri yorumu — çok faktörlü, doğal dilli analiz motoru
 # ---------------------------------------------------------------------------
+
+def _contract_insight(contract: str, tenure: int) -> str:
+    """Sözleşme tipine göre bağlam cümlesi üretir."""
+    c = contract.lower()
+    if "month" in c:
+        if tenure <= 12:
+            return "aylık sözleşmesiyle henüz kök salmamış; rakip tekliflere açık"
+        return "uzun süredir aylık sözleşmede kalıyor; güçlü bir teklif bağlılığa dönüştürebilir"
+    if "one" in c or "1" in c:
+        return "yıllık sözleşmesi var; yenileme dönemine girerken proaktif iletişim kritik"
+    if "two" in c or "2" in c:
+        return "2 yıllık taahhüdüne karşın yüksek risk taşıyor; altta yatan sorunu çözmek şart"
+    return "sözleşme yapısı bağlılığı desteklemiyor"
+
+
+def _tenure_profile(tenure: int, monthly: float) -> str:
+    """Müşteri yaşı ve gelir seviyesine göre profil cümlesi üretir."""
+    if tenure <= 3:
+        return f"ilk 3 ayında olan bir müşteri — henüz alışkanlık oluşmadan harekete geçmek kritik"
+    if tenure <= 12:
+        return f"{tenure} aylık genç bir müşteri profili"
+    if tenure <= 36:
+        if monthly >= 80:
+            return f"{tenure} aydır yüksek katkılı müşteri segmentinde yer alıyor"
+        return f"{tenure} aydır portföyde olan orta segment müşteri"
+    if monthly >= 80:
+        return f"{tenure} aylık sadakat geçmişiyle yüksek değerli müşteri profilinde"
+    return f"{tenure} aylık köklü müşteri ilişkisi mevcut"
+
+
+def _primary_risk_driver(row: pd.Series, contract: str, monthly: float) -> str:
+    """Birincil risk etkenini belirler ve doğal dille ifade eder."""
+    no_autopay    = row.get("UsesAutoPayment", 1) == 0
+    no_protection = int(row.get("NoProtectionFlag", 0) or 0) >= 2
+    tenure        = int(row.get("tenure", 0) or 0)
+    c             = contract.lower()
+
+    if no_autopay and "month" in c:
+        return ("otomatik ödeme kullanmıyor ve aylık sözleşmede; "
+                "ayrılma sürtüşmesi neredeyse sıfır")
+    if no_protection:
+        return ("güvenlik ve teknik destek hizmetlerinden yararlanmıyor; "
+                "sorun yaşadığında çözüm bulamayacak")
+    if "month" in c and monthly >= 80:
+        return ("yüksek fatura ödüyor ancak uzun vadeli bir taahhüdü yok; "
+                "fiyat duyarlılığı belirleyici")
+    if tenure <= 6:
+        return "ilişkinin erken döneminde; beklentiler henüz tam karşılanmamış olabilir"
+    return "birden fazla risk faktörü bir arada seyrediyorSOR"
+
+
+def _action_rationale(action: str, roi: float, channel: str) -> str:
+    """Aksiyon gerekçesini kısa ve güçlü biçimde ifade eder."""
+    kanal = ""
+    if channel and channel not in ("—", "Yok", ""):
+        kanal = f" {channel} üzerinden"
+    if roi >= 10:
+        return (f"'{action}' teklifi{kanal} iletildiğinde "
+                f"{roi:.0f}x geri dönüş potansiyeliyle portföyin en verimli müdahalesi")
+    if roi >= 3:
+        return (f"'{action}'{kanal} sunulması, {roi:.1f}x yatırım getirisiyle "
+                "maliyetini hızla karşılayan stratejik bir hamle")
+    return (f"'{action}' aksiyonu{kanal}, mevcut risk profilinde "
+            f"en makul müdahale seçeneği ({roi:.1f}x getiri)")
+
+
 def _rule_based_customer_comment(row: pd.Series) -> str:
     """
-    LLM bağlantısı olmadığında deterministik, iş dostu Türkçe yorum üretir.
-    Ham alan adları (InternetService vb.) kullanılmaz.
+    Çok faktörlü, doğal dilli profesyonel müşteri yorumu üretir.
+    Müşteri temsilcisine somut bağlam ve aksiyon gerekçesi sunar.
     """
     monthly   = float(row.get("MonthlyCharges", 0) or 0)
     contract  = str(row.get("Contract", "") or "")
@@ -229,38 +295,37 @@ def _rule_based_customer_comment(row: pd.Series) -> str:
     action    = str(row.get("action_detail", "—") or "—")
     roi       = float(row.get("roi", 0) or 0)
     tenure    = int(row.get("tenure", 0) or 0)
+    clv       = float(row.get("estimated_clv", 0) or 0)
+    channel   = str(row.get("action_channel", "") or "")
+    net_ben   = float(row.get("net_benefit", 0) or 0)
 
-    # Sözleşme bağlamı
-    if "Month-to-month" in contract or "month" in contract.lower():
-        bag = "aylık sözleşmede olduğu için ayrılma maliyeti çok düşük"
-    elif "One year" in contract or "one" in contract.lower():
-        bag = "yıllık sözleşmesi var; yenileme döneminde müdahale kritik"
-    elif "Two year" in contract or "two" in contract.lower():
-        bag = "2 yıllık sözleşmesi olmasına rağmen risk eşiğinin üzerinde"
-    else:
-        bag = "mevcut sözleşme koşulları risk oluşturuyor"
+    profil    = _tenure_profile(tenure, monthly)
+    sozlesme  = _contract_insight(contract, tenure)
+    risk_etk  = _primary_risk_driver(row, contract, monthly)
+    aksiyon   = _action_rationale(action, roi, channel)
 
-    # Müşteri deneyim süresi
-    if tenure <= 6:
-        deneyim = "henüz yeni bir müşteri"
-    elif tenure <= 24:
-        deneyim = f"{tenure} aydır müşterimiz"
-    else:
-        deneyim = f"{tenure} ay gibi uzun süredir müşterimiz"
-
-    # Risk yoğunluğu
+    # Risk şiddetine göre giriş vurgusu
     if churn_pct >= 80:
-        risk_ifade = "son derece yüksek"
-    elif churn_pct >= 60:
-        risk_ifade = "belirgin biçimde yüksek"
+        giris = f"%{churn_pct:.0f} terk olasılığıyla acil müdahale gerektiriyor"
+    elif churn_pct >= 65:
+        giris = f"%{churn_pct:.0f} risk skoru yüksek öncelik gerektiriyor"
     else:
-        risk_ifade = "dikkat gerektiren"
+        giris = f"%{churn_pct:.0f} risk skoru dikkat gerektiriyor"
+
+    # CLV vurgusu — değerli müşteride ek bağlam
+    clv_not = ""
+    if clv >= 3000:
+        clv_not = f" Portföy değeri {clv:,.0f} TL ile üst segmentte."
+
+    # Net fayda notu
+    net_not = ""
+    if net_ben >= 200:
+        net_not = f" Başarılı müdahalede net kazanç {net_ben:,.0f} TL."
 
     return (
-        f"Bu müşteri {deneyim}; aylık {monthly:.0f} TL ödüyor ve {bag}. "
-        f"Terk riski %{churn_pct:.0f} ile {risk_ifade} düzeyde olduğundan "
-        f"'{action}' aksiyonu önerilmektedir "
-        f"({roi:.1f}x yatırım geri dönüşü beklenmektedir)."
+        f"{profil.capitalize()}; {sozlesme}. "
+        f"Temel risk etkeni: {risk_etk}. "
+        f"{giris} — {aksiyon}.{clv_not}{net_not}"
     )
 
 

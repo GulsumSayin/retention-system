@@ -775,10 +775,11 @@ code {
   padding: 2px 8px;
 }
 
+/* Analist Yorumu — kural tabanlı ama aynı görsel ağırlık */
 .llm-badge--rule {
-  background: #f9fafb;
-  color: #6b7280;
-  border-color: #e5e7eb;
+  background: #f0fdf4;
+  color: #15803d;
+  border-color: #bbf7d0;
 }
 
 .risk-tag-high {
