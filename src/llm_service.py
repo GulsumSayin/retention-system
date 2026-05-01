@@ -22,6 +22,7 @@ LLM düzeltmeleri (saçmalama giderme):
   - Çıktı temizleme: Markdown, madde işareti, fazla cümle
 """
 
+import os
 import re
 import logging
 import requests
@@ -30,7 +31,8 @@ import pandas as pd
 
 logger = logging.getLogger(__name__)
 
-_BASE_URL       = "http://localhost:8080/v1/chat/completions"
+# Docker'da llm_server container'ına, lokalde localhost'a bağlanır
+_BASE_URL       = os.environ.get("LLM_BASE_URL", "http://localhost:8080/v1/chat/completions")
 _MODEL_NAME     = "qwen2.5-7b"
 _TIMEOUT        = 60
 _DEFAULT_TOKENS = 120
@@ -279,7 +281,12 @@ class LLMService:
     # -----------------------------------------------------------------------
     # 2. Tekil müşteri yorumu — LLM + Guardrail
     # -----------------------------------------------------------------------
-    def generate_customer_comment(self, row: pd.Series) -> Optional[str]:
+    def generate_customer_comment(self, row: pd.Series) -> Tuple[str, str]:
+        """
+        (yorum, kaynak) döndürür.
+        kaynak: 'ai'   → gerçek LLM yanıtı (guardrail geçti)
+                'rule' → kural tabanlı fallback
+        """
         system = (
             "Sen bir telekom şirketinin müşteri tutundurma analistisın. "
             "Verilen müşteri profilini inceleyip müşteri temsilcisine "
@@ -317,16 +324,17 @@ class LLMService:
 
         # LLM ulaşılamıyor veya boş döndü → kural tabanlı fallback
         if not raw_comment:
-            return _rule_based_customer_comment(row)
+            return _rule_based_customer_comment(row), "rule"
 
         # Guardrail doğrulaması — ham LLM çıktısını filtrele
         guardrail = LLMGuardrail()
         context   = row.to_dict()
-        _, _, safe_comment = guardrail.validate(
+        passed, _, safe_comment = guardrail.validate(
             raw_comment, context,
             lambda ctx: _rule_based_customer_comment(pd.Series(ctx)),
         )
-        return safe_comment
+        source = "ai" if passed else "rule"
+        return safe_comment, source
 
     # -----------------------------------------------------------------------
     # 3. DataFrame'e toplu yorum ekleme
@@ -336,14 +344,27 @@ class LLMService:
         df: pd.DataFrame,
         limit: int = 6,
         comment_col: str = "llm_comment",
-    ) -> pd.DataFrame:
+    ) -> Tuple[pd.DataFrame, bool]:
+        """
+        Yorumları DataFrame'e ekler.
+        Dönüş: (güncellenmiş_df, gerçek_llm_kullanıldı_mı)
+        'gerçek_llm_kullanıldı_mı' en az bir yorumun LLM'den geldiğini gösterir.
+        """
         result = df.copy()
-        result[comment_col] = None
+        result[comment_col]  = None
+        result["llm_source"] = "rule"  # varsayılan; LLM bağlantısı olmasa bile geçerli
+        any_real_llm = False
+
         for i, (idx, row) in enumerate(result.iterrows()):
             if i >= limit:
                 break
-            result.at[idx, comment_col] = self.generate_customer_comment(row)
-        return result
+            comment, source = self.generate_customer_comment(row)
+            result.at[idx, comment_col]  = comment
+            result.at[idx, "llm_source"] = source
+            if source == "ai":
+                any_real_llm = True
+
+        return result, any_real_llm
 
     # -----------------------------------------------------------------------
     # 4. Strateji karşılaştırması — kural tabanlı

@@ -498,7 +498,7 @@ def analyze():
         "model_name", "MonthlyCharges", "estimated_clv", "churn_proba",
         "expected_loss", "expected_saved_value", "offer_cost", "net_benefit",
         "roi", "risk_level", "action_category", "action_detail", "action_channel", "action_reason",
-        *(["llm_comment"] if use_llm else []),
+        *(["llm_comment", "llm_source"] if use_llm else []),
     ]
     COMP_COLS = [
         "strategy", "selected_count", "total_cost", "expected_saved",
@@ -506,13 +506,17 @@ def analyze():
     ]
 
     # --- LLM müşteri yorumları (opsiyonel) ----------------------------------
+    llm_actually_used = False
     if use_llm:
         try:
-            llm_svc  = LLMService()
-            optimized = llm_svc.add_llm_comment(optimized, limit=6)
-            logger.info("LLM yorumları eklendi.")
+            llm_svc = LLMService()
+            optimized, llm_actually_used = llm_svc.add_llm_comment(optimized, limit=6)
+            logger.info(
+                "Yorumlar eklendi — kaynak: %s",
+                "Qwen 2.5 (AI)" if llm_actually_used else "kural tabanlı fallback"
+            )
         except Exception as llm_err:
-            logger.warning("LLM yorum hatası: %s", llm_err)
+            logger.warning("LLM yorum ekleme hatası: %s", llm_err)
 
     # --- Portföy yorum metni ------------------------------------------------
     portfolio_comment  = rule_based_portfolio_summary(summary)
@@ -563,6 +567,7 @@ def analyze():
         "optimized_table":     _df_to_records(optimized.head(20), OPT_COLS),
         "comparison_table":    _df_to_records(comparison_df, COMP_COLS),
         "llm_enabled":         use_llm,
+        "llm_actually_used":   llm_actually_used,
         "warnings":            [],
     })
 
