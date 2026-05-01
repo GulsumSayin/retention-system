@@ -1,0 +1,21 @@
+# Sanal ortam — container'da yeniden kurulur
+venv/
+.venv/
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+
+# Çalışma zamanı çıktıları — volume ile mount edilir
+outputs/
+
+# Geliştirme araçları
+.git/
+.claude/
+.env
+.env.*
+*.egg-info/
+
+# Geliştirme notları
+*.md

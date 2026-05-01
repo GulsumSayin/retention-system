@@ -262,7 +262,7 @@ function renderResults(data) {
   renderComparisonTable(comparison_table);
 
   // Müşteri bazlı kart analizi — sadece LLM açıksa
-  renderCustomerInsights(optimized_table, data.llm_enabled);
+  renderCustomerInsights(optimized_table, data.llm_enabled, data.llm_actually_used);
 
   // Strateji yorum paneli
   const panelCls = advantage.agent_is_best ? "green-top" : "gray-top";
@@ -295,17 +295,11 @@ function renderResults(data) {
 /* ==========================================================================
    Müşteri Bazlı Analizler — yalnızca LLM aktifken gösterilir
    ========================================================================== */
-function renderCustomerInsights(rows, llmEnabled) {
+function renderCustomerInsights(rows, llmEnabled, llmActuallyUsed) {
   const panel = document.getElementById("customerInsightPanel");
   if (!panel) return;
 
-  // LLM kapalıysa bölümü tamamen gizle
-  if (!llmEnabled) {
-    panel.classList.add("hidden");
-    return;
-  }
-
-  if (!rows || rows.length === 0) {
+  if (!llmEnabled || !rows || rows.length === 0) {
     panel.classList.add("hidden");
     return;
   }
@@ -313,20 +307,27 @@ function renderCustomerInsights(rows, llmEnabled) {
   const display = rows.slice(0, 6);
 
   const cards = display.map(r => {
-    const comment  = r.llm_comment && String(r.llm_comment).trim() ? String(r.llm_comment) : null;
-    const badgeCls = r.risk_level === "Yüksek" ? "risk-tag-high" : "risk-tag-mid";
-    const headerTop = [
+    const comment    = r.llm_comment && String(r.llm_comment).trim() ? String(r.llm_comment) : null;
+    const isAI       = r.llm_source === "ai";
+    const riskCls    = r.risk_level === "Yüksek" ? "risk-tag-high" : "risk-tag-mid";
+    const headerTop  = [
       r.model_name ? escHtml(String(r.model_name)).toUpperCase() : "",
       r.action_channel && r.action_channel !== "Yok" ? escHtml(String(r.action_channel)).toUpperCase() : ""
     ].filter(Boolean).join(" · ");
+
+    const commentBadge = comment
+      ? (isAI
+          ? '<span class="llm-badge">AI Yorumu</span>'
+          : '<span class="llm-badge llm-badge--rule">Kural Bazlı Yorum</span>')
+      : "";
 
     return `
     <div class="ci-card">
       <div class="ci-header">${headerTop}</div>
       <div class="ci-title">${escHtml(String(r.action_detail || "—"))}</div>
       <div class="ci-badges">
-        <span class="${badgeCls}">${escHtml(String(r.risk_level || ""))} Risk</span>
-        ${comment ? '<span class="llm-badge">AI Yorumu</span>' : ''}
+        <span class="${riskCls}">${escHtml(String(r.risk_level || ""))} Risk</span>
+        ${commentBadge}
       </div>
       ${comment ? `<div class="ci-text">${escHtml(comment)}</div>` : ""}
       <div class="ci-metrics">
@@ -338,15 +339,20 @@ function renderCustomerInsights(rows, llmEnabled) {
     </div>`;
   }).join("");
 
+  const headerBadge = llmActuallyUsed
+    ? '<span class="llm-count">AI yorumları aktif</span>'
+    : '<span class="llm-count llm-count--rule">Kural bazlı yorumlar</span>';
+
+  const caption = llmActuallyUsed
+    ? "Her müşteri için kişiselleştirilmiş yorum ve öneri Qwen 2.5 tarafından otomatik oluşturulmuştur."
+    : "AI Yorum Asistanı şu an bağlantı kuramadı; yorumlar müşteri profiline göre otomatik hazırlandı.";
+
   panel.innerHTML = `
     <div class="ci-wrap">
       <div class="ci-wrap-title">
-        Müşteri Bazlı Analizler
-        <span class="llm-count">AI yorumları aktif</span>
+        Müşteri Bazlı Analizler ${headerBadge}
       </div>
-      <p class="section-caption" style="margin-bottom:14px">
-        Her müşteri için kişiselleştirilmiş yorum ve öneri AI Yorum Asistanı tarafından otomatik oluşturulmuştur.
-      </p>
+      <p class="section-caption" style="margin-bottom:14px">${caption}</p>
       <div class="ci-list">${cards}</div>
     </div>`;
   panel.classList.remove("hidden");
