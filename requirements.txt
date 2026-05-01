@@ -18,8 +18,7 @@ catboost>=1.2,<2.0
 shap>=0.44,<1.0
 
 # Web uygulamaları
-streamlit>=1.33,<2.0   # Mevcut Streamlit arayüzü (src/app.py)
-flask>=3.0,<4.0        # Yeni Flask arayüzü (flask_app.py)
+flask>=3.0,<4.0
 
 # İstatistiksel A/B testi (ABTestSimulator)
 scipy>=1.11,<2.0
