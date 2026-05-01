@@ -508,6 +508,24 @@ def analyze():
     # --- LLM müşteri yorumları (opsiyonel) ----------------------------------
     llm_actually_used = False
     if use_llm:
+        # Yerel ortamda llama.cpp sunucusunu otomatik başlat
+        try:
+            from llama_server_manager import is_server_running, start_server
+            if not is_server_running():
+                logger.info("llama.cpp sunucusu başlatılıyor (Qwen 2.5)...")
+                ok = start_server()
+                if ok:
+                    logger.info("llama.cpp sunucusu hazır.")
+                else:
+                    logger.warning(
+                        "llama.cpp sunucusu başlatılamadı — "
+                        "model dosyası veya sunucu yolu bulunamıyor. "
+                        "Kural tabanlı yorumlar kullanılacak."
+                    )
+        except Exception as srv_err:
+            # Bulut ortamında (Railway vb.) llama_server_manager çalışmaz — normal
+            logger.info("llama server yöneticisi devre dışı (%s). Kural tabanlı mod.", srv_err)
+
         try:
             llm_svc = LLMService()
             optimized, llm_actually_used = llm_svc.add_llm_comment(optimized, limit=6)
