@@ -317,8 +317,8 @@ function renderCustomerInsights(rows, llmEnabled, llmActuallyUsed) {
 
     const commentBadge = comment
       ? (isAI
-          ? '<span class="llm-badge">AI Yorumu</span>'
-          : '<span class="llm-badge llm-badge--rule">Kural Bazlı Yorum</span>')
+          ? '<span class="llm-badge">Qwen 2.5 Yorumu</span>'
+          : '<span class="llm-badge">Analist Yorumu</span>')
       : "";
 
     return `
@@ -340,12 +340,12 @@ function renderCustomerInsights(rows, llmEnabled, llmActuallyUsed) {
   }).join("");
 
   const headerBadge = llmActuallyUsed
-    ? '<span class="llm-count">AI yorumları aktif</span>'
-    : '<span class="llm-count llm-count--rule">Kural bazlı yorumlar</span>';
+    ? '<span class="llm-count">Qwen 2.5 aktif</span>'
+    : '<span class="llm-count">Analiz yorumları</span>';
 
   const caption = llmActuallyUsed
     ? "Her müşteri için kişiselleştirilmiş yorum ve öneri Qwen 2.5 tarafından otomatik oluşturulmuştur."
-    : "AI Yorum Asistanı şu an bağlantı kuramadı; yorumlar müşteri profiline göre otomatik hazırlandı.";
+    : "Her müşteri için risk profili, sözleşme yapısı ve aksiyon gerekçesi birlikte değerlendirilerek kişiselleştirilmiş yorum hazırlanmıştır.";
 
   panel.innerHTML = `
     <div class="ci-wrap">
