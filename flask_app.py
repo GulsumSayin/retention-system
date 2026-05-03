@@ -21,13 +21,14 @@ import math
 import os
 import pickle
 import sys
+import uuid
 from datetime import datetime
 
 import pandas as pd
 import plotly.graph_objects as go
 import plotly.express as px
 import plotly.io as pio
-from flask import Flask, jsonify, render_template, request
+from flask import Flask, jsonify, render_template, request, session
 
 # ---------------------------------------------------------------------------
 # Path kurulumu — src/ modülleri erişilebilir hale getir
@@ -64,6 +65,7 @@ logger = logging.getLogger(__name__)
 
 app = Flask(__name__)
 app.config["MAX_CONTENT_LENGTH"] = 16 * 1024 * 1024  # 16 MB dosya limiti
+app.secret_key = os.environ.get("SECRET_KEY", "retention-platform-secret-2025")
 
 # ---------------------------------------------------------------------------
 # Bileşen havuzu — uygulama ömrü boyunca tek örnek (Singleton pattern)
@@ -88,27 +90,44 @@ def _get_components() -> dict:
 # ---------------------------------------------------------------------------
 _RESULTS_PATH = os.path.join(_ROOT_DIR, "data", "results.json")
 
-def _load_history() -> list:
-    """data/results.json dosyasından geçmiş analiz kayıtlarını okur."""
+def _get_session_id() -> str:
+    """Her ziyaretçiye tarayıcı oturumu boyunca sabit kalan benzersiz kimlik atar."""
+    if "sid" not in session:
+        session["sid"] = str(uuid.uuid4())
+    return session["sid"]
+
+def _load_history(session_id: str | None = None) -> list:
+    """
+    data/results.json dosyasından geçmiş analiz kayıtlarını okur.
+    session_id verilirse yalnızca o kullanıcıya ait kayıtlar döner.
+    """
     try:
         with open(_RESULTS_PATH, encoding="utf-8") as f:
-            return json.load(f)
+            all_records = json.load(f)
     except (FileNotFoundError, json.JSONDecodeError):
         return []
+    if session_id:
+        return [r for r in all_records if r.get("session_id") == session_id]
+    return all_records
 
 def _persist_result(record: dict) -> None:
     """
     Analiz sonucunu data/results.json'a ekler.
-    Dosya yoksa oluşturulur; var ise listeye eklenir.
+    Her kayıtta session_id bulunur; böylece kullanıcılar birbirinin
+    geçmişini göremez.
     """
     os.makedirs(os.path.dirname(_RESULTS_PATH), exist_ok=True)
-    history = _load_history()
-    history.append(record)
-    # Yalnızca son 100 kayıt tutulur (dosya şişmesin)
-    if len(history) > 100:
-        history = history[-100:]
+    try:
+        with open(_RESULTS_PATH, encoding="utf-8") as f:
+            all_records = json.load(f)
+    except (FileNotFoundError, json.JSONDecodeError):
+        all_records = []
+    all_records.append(record)
+    # Sunucu genelinde son 500 kayıt tutulur (dosya şişmesin)
+    if len(all_records) > 500:
+        all_records = all_records[-500:]
     with open(_RESULTS_PATH, "w", encoding="utf-8") as f:
-        json.dump(history, f, ensure_ascii=False, indent=2)
+        json.dump(all_records, f, ensure_ascii=False, indent=2)
 
 # ---------------------------------------------------------------------------
 # Model meta yardımcıları (Streamlit app.py'deki ile aynı mantık)
@@ -544,6 +563,7 @@ def analyze():
     run_ts = datetime.now().isoformat()
     record = {
         "timestamp":             run_ts,
+        "session_id":            _get_session_id(),
         "model_key":             model_key,
         "total_customers":       summary["total_customers"],
         "high_risk_count":       summary["high_risk_count"],
@@ -593,10 +613,11 @@ def analyze():
 @app.route("/api/history")
 def history():
     """
-    data/results.json'dan geçmiş analiz kayıtlarını ve zaman serisi grafiğini döner.
-    Dashboard'daki "Geçmiş Analiz Performansları" bölümü bu endpoint'i kullanır.
+    Yalnızca aktif kullanıcının geçmiş analiz kayıtlarını döner.
+    Session cookie ile kullanıcılar birbirinin verilerini göremez.
     """
-    records = _load_history()
+    sid     = _get_session_id()
+    records = _load_history(session_id=sid)
     chart   = _plot_history_line(records)
     return jsonify({"records": records, "chart": chart})
 
