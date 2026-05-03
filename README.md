@@ -1,4 +1,4 @@
-# 📊 Müşteri Tutundurma Zekâsı Platformu (Retention Intelligence Platform)
+# 📊  Müşteri Tutundurma Zekâsı Platformu (Retention Intelligence Platform)
 
 ![Python](https://img.shields.io/badge/Python-3.9+-blue.svg) ![Flask](https://img.shields.io/badge/Flask-3.0-green.svg) ![Status](https://img.shields.io/badge/Status-Active-brightgreen.svg)
 
