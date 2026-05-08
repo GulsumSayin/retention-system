@@ -222,5 +222,47 @@
     "ab_p_value": 0.000156,
     "ab_power": 0.9994,
     "ab_significant": true
+  },
+  {
+    "timestamp": "2026-05-01T15:28:46.447480",
+    "model_key": "catboost",
+    "total_customers": 40,
+    "high_risk_count": 14,
+    "avg_churn": 0.4007,
+    "selected_count": 12,
+    "selected_budget": 168.2,
+    "selected_net_benefit": 3177.47,
+    "avg_roi": 22.054,
+    "ab_p_value": 6.6e-05,
+    "ab_power": 0.9996,
+    "ab_significant": true
+  },
+  {
+    "timestamp": "2026-05-01T16:51:42.084622",
+    "model_key": "catboost",
+    "total_customers": 40,
+    "high_risk_count": 14,
+    "avg_churn": 0.4007,
+    "selected_count": 10,
+    "selected_budget": 148.79,
+    "selected_net_benefit": 2802.85,
+    "avg_roi": 22.594,
+    "ab_p_value": 0.000156,
+    "ab_power": 0.9994,
+    "ab_significant": true
+  },
+  {
+    "timestamp": "2026-05-01T22:30:54.841934",
+    "model_key": "catboost",
+    "total_customers": 40,
+    "high_risk_count": 14,
+    "avg_churn": 0.4007,
+    "selected_count": 10,
+    "selected_budget": 148.79,
+    "selected_net_benefit": 2802.85,
+    "avg_roi": 22.594,
+    "ab_p_value": 0.000156,
+    "ab_power": 0.9994,
+    "ab_significant": true
   }
 ]
