@@ -65,6 +65,7 @@ logger = logging.getLogger(__name__)
 
 app = Flask(__name__)
 app.config["MAX_CONTENT_LENGTH"] = 16 * 1024 * 1024  # 16 MB dosya limiti
+app.config["JSON_SORT_KEYS"]     = False               # Sütun sırası korunsun
 app.secret_key = os.environ.get("SECRET_KEY", "retention-platform-secret-2025")
 
 # ---------------------------------------------------------------------------
