@@ -415,6 +415,9 @@ def analyze():
     candidate_ratio  = float(request.form.get("candidate_ratio", 0.20))
     use_llm          = request.form.get("use_llm", "0") == "1"
 
+    if max_budget <= 0:
+        return jsonify({"error": "Kampanya bütçesi sıfırdan büyük olmalıdır."}), 400
+
     # --- Veri doğrulama -----------------------------------------------------
     val_report = DataValidator().validate(raw_df)
     if not val_report.is_valid:
@@ -435,14 +438,33 @@ def analyze():
 
     # --- Analiz pipeline ----------------------------------------------------
     try:
+        # Model tarafından kullanılan bilinen sütunlar
+        _MODEL_COLS = {
+            "tenure", "MonthlyCharges", "TotalCharges", "Contract",
+            "PaymentMethod", "InternetService", "gender", "SeniorCitizen",
+            "Partner", "Dependents", "PhoneService", "MultipleLines",
+            "OnlineSecurity", "OnlineBackup", "DeviceProtection",
+            "TechSupport", "StreamingTV", "StreamingMovies", "PaperlessBilling",
+            "Churn",
+        }
+        # Modelin bilmediği tüm sütunları sakla (customerID, ad, telefon, e-posta vb.)
+        _extra_col_names = [c for c in raw_df.columns if c not in _MODEL_COLS]
+        _extra_cols = raw_df[_extra_col_names].reset_index(drop=True) if _extra_col_names else None
+
         # 1 — Tahmin
         predictions = router.predict(raw_df, model=model_key)
+
+        # Ekstra sütunları tahmin sonucunun başına ekle
+        if _extra_cols is not None:
+            predictions = predictions.reset_index(drop=True)
+            for col in reversed(_extra_col_names):
+                predictions.insert(0, col, _extra_cols[col].values)
 
         # 2 — SHAP
         shap_fitted = False
         try:
             model_obj    = router.cat_service.model if model_key == "catboost" else router.xgb_service.model
-            _meta_cols   = {"churn_proba", "predicted_churn", "threshold_used", "model_name"}
+            _meta_cols   = set(_extra_col_names or []) | {"churn_proba", "predicted_churn", "threshold_used", "model_name"}
             feature_cols = [c for c in predictions.columns if c not in _meta_cols]
             shap_svc.fit(model_obj, predictions[feature_cols])
             agent.set_shap_service(shap_svc, feature_cols)
@@ -485,7 +507,7 @@ def analyze():
 
     # SHAP grafiği
     if shap_fitted:
-        _non_feature = {
+        _non_feature = set(_extra_col_names or []) | {
             "churn_proba", "predicted_churn", "threshold_used", "model_name",
             "risk_level", "action_category", "action_detail", "action_channel",
             "action_priority", "personalization_note", "action", "action_reason",
@@ -508,13 +530,14 @@ def analyze():
             .to_dict(orient="records")
         )
 
+    _id_cols = _extra_col_names or []
     CAND_COLS = [
-        "model_name", "tenure", "MonthlyCharges", "estimated_clv", "churn_proba",
+        *_id_cols, "model_name", "tenure", "MonthlyCharges", "estimated_clv", "churn_proba",
         "expected_loss", "priority_score", "risk_level", "action_category",
         "action_detail", "action_channel", "action_reason", "personalization_note",
     ]
     OPT_COLS = [
-        "model_name", "MonthlyCharges", "estimated_clv", "churn_proba",
+        *_id_cols, "model_name", "MonthlyCharges", "estimated_clv", "churn_proba",
         "expected_loss", "expected_saved_value", "offer_cost", "net_benefit",
         "roi", "risk_level", "action_category", "action_detail", "action_channel", "action_reason",
         *(["llm_comment", "llm_source"] if use_llm else []),
@@ -620,6 +643,22 @@ def history():
     records = _load_history(session_id=sid)
     chart   = _plot_history_line(records)
     return jsonify({"records": records, "chart": chart})
+
+
+@app.route("/api/history", methods=["DELETE"])
+def clear_history():
+    """Aktif kullanıcıya ait tüm geçmiş kayıtları siler."""
+    sid = _get_session_id()
+    try:
+        with open(_RESULTS_PATH, encoding="utf-8") as f:
+            all_records = json.load(f)
+    except (FileNotFoundError, json.JSONDecodeError):
+        all_records = []
+    kept = [r for r in all_records if r.get("session_id") != sid]
+    with open(_RESULTS_PATH, "w", encoding="utf-8") as f:
+        json.dump(kept, f, ensure_ascii=False, indent=2)
+    logger.info("Geçmiş temizlendi: session %s, silinen %d kayıt", sid, len(all_records) - len(kept))
+    return jsonify({"ok": True, "deleted": len(all_records) - len(kept)})
 
 
 @app.route("/api/model_info")

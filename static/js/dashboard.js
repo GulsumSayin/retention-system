@@ -30,6 +30,7 @@ window.addEventListener("DOMContentLoaded", () => {
   setupTooltips();
   setupHistoryToggle();
   setupDownloadButtons();
+  setupClearHistory();
 });
 
 /* ==========================================================================
@@ -157,6 +158,12 @@ analyzeBtn.addEventListener("click", runAnalysis);
 async function runAnalysis() {
   const file = fileInput.files[0];
   if (!file) { showError("Lütfen bir CSV dosyası seçin."); return; }
+
+  const budget = parseFloat(document.getElementById("maxBudget").value);
+  if (!budget || budget <= 0) {
+    showError("Kampanya bütçesi sıfırdan büyük bir değer olmalıdır.");
+    return;
+  }
 
   setLoading(true);
   setProgress(10, "Veriler kontrol ediliyor...");
@@ -461,12 +468,25 @@ const COMP_HEADERS = {
   cost_efficiency: "Maliyet Verimliliği", precision_at_k: "Doğruluk",
 };
 
+function buildExtraHeaders(rows, knownHeaders) {
+  if (!rows || rows.length === 0) return {};
+  const known = new Set(Object.keys(knownHeaders));
+  const extra = {};
+  Object.keys(rows[0]).forEach(k => {
+    if (!known.has(k)) extra[k] = k; // sütun adını başlık olarak kullan
+  });
+  return extra;
+}
+
 function renderCandidateTable(rows) {
-  renderTable("candidateTableWrap", rows, CAND_HEADERS, formatCandidateCell);
+  const extra   = buildExtraHeaders(rows, CAND_HEADERS);
+  const headers = { ...extra, ...CAND_HEADERS };
+  renderTable("candidateTableWrap", rows, headers, formatCandidateCell);
 }
 
 function renderOptimizedTable(rows) {
-  const headers = { ...OPT_HEADERS };
+  const extra   = buildExtraHeaders(rows, OPT_HEADERS);
+  const headers = { ...extra, ...OPT_HEADERS };
   const hasComments = rows.length && rows.some(r => r.llm_comment && String(r.llm_comment).trim());
   if (hasComments) headers.llm_comment = "🤖 AI Yorumu";
   renderTable("optimizedTableWrap", rows, headers, formatOptCell);
@@ -667,6 +687,24 @@ function downloadCSV(rows, filename) {
   const a    = document.createElement("a");
   a.href = url; a.download = filename; a.click();
   URL.revokeObjectURL(url);
+}
+
+/* ==========================================================================
+   Geçmiş analiz temizleme
+   ========================================================================== */
+function setupClearHistory() {
+  const btn = document.getElementById("clearHistoryBtn");
+  if (!btn) return;
+  btn.addEventListener("click", async () => {
+    if (!confirm("Bu oturuma ait tüm geçmiş analizler silinecek. Emin misiniz?")) return;
+    try {
+      const res = await fetch("/api/history", { method: "DELETE" });
+      const data = await res.json();
+      if (data.ok) loadHistory();
+    } catch (err) {
+      alert("Geçmiş silinemedi: " + err.message);
+    }
+  });
 }
 
 /* ==========================================================================
