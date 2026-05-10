@@ -222,24 +222,18 @@
     </p>
     <div class="table-wrap" id="optimizedTableWrap"></div>
 
-    <!-- Müşteri Bazlı Analizler — her zaman görünür -->
-    <div id="customerInsightPanel" class="hidden" style="margin-top:20px"></div>
-
-    <!-- İndirme butonları — analiz sonrası gösterilir -->
-    <div id="downloadSection" class="hidden" style="margin-top:16px">
-      <div class="download-bar">
-        <span class="download-bar-label">Çıktıları İndir</span>
-        <button class="btn-download" id="dlCandidates" title="Riskli müşteri listesini CSV olarak indir">
-          ⬇ Riskli Müşteri Listesi
-        </button>
-        <button class="btn-download" id="dlOptimized" title="Aksiyon planını CSV olarak indir">
-          ⬇ Aksiyon Planı
-        </button>
-        <button class="btn-download" id="dlComparison" title="Strateji karşılaştırmasını CSV olarak indir">
-          ⬇ Strateji Karşılaştırması
-        </button>
+    <!-- İndirme butonları — aksiyon planının hemen altında -->
+    <div id="downloadSection" class="download-block hidden">
+      <span class="download-block-label">Çıktıları İndir</span>
+      <div class="download-block-btns">
+        <button class="btn-dl-large" id="dlCandidates">⬇ Riskli Müşteri Listesi</button>
+        <button class="btn-dl-large" id="dlOptimized">⬇ Aksiyon Planı</button>
+        <button class="btn-dl-large" id="dlComparison">⬇ Strateji Karşılaştırması</button>
       </div>
     </div>
+
+    <!-- Müşteri Bazlı Analizler — her zaman görünür -->
+    <div id="customerInsightPanel" class="hidden" style="margin-top:20px"></div>
 
     <hr class="divider" />
 
@@ -278,9 +272,14 @@
   <section id="historySection">
     <div class="collapsible-header" id="historyToggle">
       <h2 style="margin:0">Geçmiş Analizler</h2>
-      <button class="collapsible-btn" id="historyToggleBtn" aria-expanded="false">
-        <span id="historyToggleIcon">▼</span> Göster
-      </button>
+      <div style="display:flex;gap:8px;align-items:center">
+        <button class="btn-danger-sm" id="clearHistoryBtn" title="Bu oturuma ait tüm geçmiş analizleri sil">
+          Geçmişi Temizle
+        </button>
+        <button class="collapsible-btn" id="historyToggleBtn" aria-expanded="false">
+          <span id="historyToggleIcon">▼</span> Göster
+        </button>
+      </div>
     </div>
     <div id="historyContent" class="collapsible-content collapsed">
       <p class="section-caption" style="margin-top:10px">
@@ -296,6 +295,7 @@
 
 <!-- Tooltip overlay -->
 <div class="tooltip-bubble" id="tooltipBubble"></div>
+
 
 <script src="/static/js/dashboard.js"></script>
 </body>
