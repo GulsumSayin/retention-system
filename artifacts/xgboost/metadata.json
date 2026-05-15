@@ -1,0 +1,15 @@
+{
+  "model_name": "xgboost",
+  "role": "Champion",
+  "input_type": "feature_engineered_ohe",
+  "uses_ohe": true,
+  "threshold": 0.6681244373321533,
+  "notes": "XGBoost modeli feature engineering + OHE sonrasi numerik matris ile calisir.",
+  "metrics": {
+    "roc_auc": 0.8449,
+    "pr_auc": 0.6551,
+    "f1": 0.6044,
+    "precision": 0.6215,
+    "recall": 0.5882
+  }
+}
