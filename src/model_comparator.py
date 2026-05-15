@@ -1,6 +1,6 @@
 """
 model_comparator.py
-Champion (CatBoost) / Challenger (XGBoost) İstatistiksel Karşılaştırma Modülü
+Champion (XGBoost) / Challenger (CatBoost) İstatistiksel Karşılaştırma Modülü
 
 Akademik Katkı:
   İki modeli nicel ve istatistiksel olarak karşılaştırır.
@@ -240,7 +240,7 @@ def _bootstrap_auc_ci(y_true, y_score, n=1000, ci=0.95, seed=42):
 
 class ModelComparator:
     """
-    Champion (CatBoost) ve Challenger (XGBoost) modellerini istatistiksel
+    Champion (XGBoost) ve Challenger (CatBoost) modellerini istatistiksel
     olarak karşılaştırır.
 
     Kullanım:
@@ -323,10 +323,10 @@ class ModelComparator:
 
             logger.info(
                 "Champion ROC-AUC: %.4f %s | Challenger: %.4f %s",
-                report["catboost_metrics"]["roc_auc"],
-                report["catboost_metrics"]["roc_auc_ci"],
                 report["xgboost_metrics"]["roc_auc"],
                 report["xgboost_metrics"]["roc_auc_ci"],
+                report["catboost_metrics"]["roc_auc"],
+                report["catboost_metrics"]["roc_auc_ci"],
             )
             if report["delong_test"]:
                 d = report["delong_test"]
@@ -356,14 +356,14 @@ class ModelComparator:
 
         fig = go.Figure()
         fig.add_trace(go.Violin(
-            y=proba_a, name="Champion (CatBoost)",
-            box_visible=True, meanline_visible=True,
-            fillcolor="#bfdbfe", line_color="#1d4ed8", opacity=0.7,
-        ))
-        fig.add_trace(go.Violin(
-            y=proba_b, name="Challenger (XGBoost)",
+            y=proba_b, name="Champion (XGBoost)",
             box_visible=True, meanline_visible=True,
             fillcolor="#fde68a", line_color="#d97706", opacity=0.7,
+        ))
+        fig.add_trace(go.Violin(
+            y=proba_a, name="Challenger (CatBoost)",
+            box_visible=True, meanline_visible=True,
+            fillcolor="#bfdbfe", line_color="#1d4ed8", opacity=0.7,
         ))
         fig.update_layout(
             title=dict(
@@ -400,7 +400,7 @@ class ModelComparator:
             name="Mükemmel Kalibrasyon",
         ))
 
-        colors = [("#1d4ed8", "Champion (CatBoost)"), ("#d97706", "Challenger (XGBoost)")]
+        colors = [("#d97706", "Champion (XGBoost)"), ("#1d4ed8", "Challenger (CatBoost)")]
         for (color, label), proba_key in zip(
             colors, ["catboost_proba", "xgboost_proba"]
         ):
@@ -443,30 +443,30 @@ class ModelComparator:
             xgb_val = report["xgboost_metrics"].get(key, "—")
             rows.append({
                 "Metrik":                label,
-                "Champion (CatBoost)":   cat_val,
-                "Challenger (XGBoost)":  xgb_val,
+                "Champion (XGBoost)":    xgb_val,
+                "Challenger (CatBoost)": cat_val,
             })
 
         rows.append({"Metrik": "Tahmin Uyuşma Oranı",
-                     "Champion (CatBoost)": f"{report['agreement_rate']:.4f}",
-                     "Challenger (XGBoost)": "—"})
+                     "Champion (XGBoost)":    f"{report['agreement_rate']:.4f}",
+                     "Challenger (CatBoost)": "—"})
         rows.append({"Metrik": "Olasılık Korelasyonu",
-                     "Champion (CatBoost)": f"{report['proba_corr']:.4f}",
-                     "Challenger (XGBoost)": "—"})
+                     "Champion (XGBoost)":    f"{report['proba_corr']:.4f}",
+                     "Challenger (CatBoost)": "—"})
 
         if report.get("delong_test"):
             d = report["delong_test"]
             rows.append({
                 "Metrik":               "DeLong p-değeri (H₀: AUC eşit)",
-                "Champion (CatBoost)":  f"p={d['p_value']:.4f}",
-                "Challenger (XGBoost)": "ANLAMLI" if d["significant_95"] else "Anlamsız",
+                "Champion (XGBoost)":    f"p={d['p_value']:.4f}",
+                "Challenger (CatBoost)": "ANLAMLI" if d["significant_95"] else "Anlamsız",
             })
         if report.get("mcnemar_test"):
             m = report["mcnemar_test"]
             rows.append({
                 "Metrik":               "McNemar p-değeri (H₀: hata dağılımı eşit)",
-                "Champion (CatBoost)":  f"p={m['p_value']:.4f}",
-                "Challenger (XGBoost)": "ANLAMLI" if m["significant_95"] else "Anlamsız",
+                "Champion (XGBoost)":    f"p={m['p_value']:.4f}",
+                "Challenger (CatBoost)": "ANLAMLI" if m["significant_95"] else "Anlamsız",
             })
 
         return pd.DataFrame(rows)

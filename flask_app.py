@@ -411,7 +411,7 @@ def analyze():
         return jsonify({"error": f"CSV okunamadı: {err}"}), 400
 
     # --- Parametreler -------------------------------------------------------
-    model_key        = request.form.get("model_key", "catboost")
+    model_key        = request.form.get("model_key", "xgboost")
     max_budget       = float(request.form.get("max_budget", 2000))
     candidate_ratio  = float(request.form.get("candidate_ratio", 0.20))
     use_llm          = request.form.get("use_llm", "0") == "1"

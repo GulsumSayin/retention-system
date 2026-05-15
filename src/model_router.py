@@ -3,7 +3,7 @@ model_router.py
 Model seçim ve yönlendirme katmanı.
 
 Mimari Notlar:
-  Champion (CatBoost) varsayılan modeldir. XGBoost servisi Challenger olarak
+  Champion (XGBoost) varsayılan modeldir. CatBoost servisi Challenger olarak
   yedekte tutulur; predict_both() ile Champion/Challenger karşılaştırması
   yapılabilir.
 
@@ -42,31 +42,31 @@ class ModelRouter:
     ) -> None:
         self.cat_service = cat_service or CatBoostInferenceService()
         self.xgb_service = xgb_service or XGBInferenceService()
-        logger.info("ModelRouter hazır (Champion: CatBoost, Challenger: XGBoost).")
+        logger.info("ModelRouter hazır (Champion: XGBoost, Challenger: CatBoost).")
 
     # -----------------------------------------------------------------------
     # Tek model tahmini
     # -----------------------------------------------------------------------
 
-    def predict(self, raw_df: pd.DataFrame, model: str = "catboost") -> pd.DataFrame:
+    def predict(self, raw_df: pd.DataFrame, model: str = "xgboost") -> pd.DataFrame:
         """
         Ham müşteri verisini belirtilen modele yönlendirir.
 
         Parametreler
         ------------
         raw_df : Ham DataFrame (IBM Telco formatı)
-        model  : "catboost" (varsayılan, Champion) | "xgboost" (Challenger)
+        model  : "xgboost" (varsayılan, Champion) | "catboost" (Challenger)
 
         Döndürür
         --------
         pd.DataFrame : churn_proba ve predicted_churn eklenmiş DataFrame
         """
-        if model == "xgboost":
-            logger.info("ModelRouter → XGBoost (Challenger), %d satır", len(raw_df))
-            return self.xgb_service.predict(raw_df)
+        if model == "catboost":
+            logger.info("ModelRouter → CatBoost (Challenger), %d satır", len(raw_df))
+            return self.cat_service.predict(raw_df)
 
-        logger.info("ModelRouter → CatBoost (Champion), %d satır", len(raw_df))
-        return self.cat_service.predict(raw_df)
+        logger.info("ModelRouter → XGBoost (Champion), %d satır", len(raw_df))
+        return self.xgb_service.predict(raw_df)
 
     # -----------------------------------------------------------------------
     # Champion / Challenger karşılaştırması

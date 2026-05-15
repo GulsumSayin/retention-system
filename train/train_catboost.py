@@ -1,6 +1,6 @@
 """
 train_catboost.py
-CatBoost Champion Model — Profesyonel Eğitim Pipeline'ı
+CatBoost Challenger Model — Profesyonel Eğitim Pipeline'ı
 
 Tez Metodoloji Özeti:
   - Veri: IBM Telco Customer Churn (7043 satır, %26.5 churn oranı)
@@ -292,7 +292,7 @@ def make_objective(X_train_fe: pd.DataFrame, y_train: pd.Series, cat_features: l
 
 def train() -> None:
     logger.info("=" * 60)
-    logger.info("CatBoost Champion Model Eğitimi Başlıyor")
+    logger.info("CatBoost Challenger Model Eğitimi Başlıyor")
     logger.info("=" * 60)
 
     # ── Veri Yükleme ─────────────────────────────────────────────────────
@@ -427,7 +427,7 @@ def train() -> None:
     # Model kartı (metadata.json)
     metadata = {
         "model":            "CatBoostClassifier",
-        "role":             "Champion",
+        "role":             "Challenger",
         "trained_at":       datetime.now().isoformat(timespec="seconds"),
         "random_state":     RANDOM_STATE,
         "train_size":       len(X_train_fe),
