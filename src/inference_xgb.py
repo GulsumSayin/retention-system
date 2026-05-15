@@ -1,6 +1,6 @@
 """
 inference_xgb.py
-XGBoost Challenger modeli ile churn olasılığı tahmini.
+XGBoost Champion modeli ile churn olasılığı tahmini.
 """
 
 import logging
@@ -81,7 +81,7 @@ class XGBInferenceService:
         predicted_churn = (churn_proba >= self.threshold).astype(int)
 
         result = df_fe.copy()
-        result["model_name"]      = "XGBoost"
+        result["model_name"]      = "Champion (XGBoost)"
         result["churn_proba"]     = churn_proba
         result["predicted_churn"] = predicted_churn
         result["threshold_used"]  = self.threshold

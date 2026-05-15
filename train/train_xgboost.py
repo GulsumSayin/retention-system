@@ -1,6 +1,6 @@
 """
 train_xgboost.py
-XGBoost Challenger Model — Profesyonel Eğitim Pipeline'ı
+XGBoost Champion Model — Profesyonel Eğitim Pipeline'ı
 
 Tez Metodoloji Özeti:
   - Model: XGBClassifier, Optuna ile hiperparametre optimizasyonu
@@ -11,8 +11,8 @@ Tez Metodoloji Özeti:
               threshold.pkl, metadata.json
 
 Champion/Challenger Notları:
-  - CatBoost: Optuna (PR-AUC, 3-fold) + auto_class_weights="Balanced"
-  - XGBoost : Optuna (PR-AUC, 3-fold) + scale_pos_weight
+  - XGBoost : Optuna (PR-AUC, 3-fold) + scale_pos_weight  [CHAMPION]
+  - CatBoost: Optuna (PR-AUC, 3-fold) + auto_class_weights="Balanced"  [Challenger]
   - Her iki model de aynı feature engineering ve threshold metodolojisini kullanır.
   - İstatistiksel karşılaştırma için model_comparator.py kullanın.
 
@@ -239,7 +239,7 @@ def make_objective(X_ohe: pd.DataFrame, y_train: pd.Series, scale_pos_weight: fl
 
 def train() -> None:
     logger.info("=" * 60)
-    logger.info("XGBoost Challenger Model Eğitimi Başlıyor")
+    logger.info("XGBoost Champion Model Eğitimi Başlıyor")
     logger.info("=" * 60)
 
     # ── Veri Yükleme ─────────────────────────────────────────────────────
@@ -355,7 +355,7 @@ def train() -> None:
 
     metadata = {
         "model":            "XGBClassifier",
-        "role":             "Challenger",
+        "role":             "Champion",
         "trained_at":       datetime.now().isoformat(timespec="seconds"),
         "random_state":     RANDOM_STATE,
         "train_size":       len(X_train_ohe),

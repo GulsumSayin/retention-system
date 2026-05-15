@@ -1,6 +1,6 @@
 """
 inference_cat.py
-CatBoost Champion modeli ile churn olasılığı tahmini.
+CatBoost Challenger modeli ile churn olasılığı tahmini.
 """
 
 import logging
@@ -84,7 +84,7 @@ class CatBoostInferenceService:
         predicted_churn = (churn_proba >= self.threshold).astype(int)
 
         result = X_ready.copy()
-        result["model_name"]      = "Champion (CatBoost)"
+        result["model_name"]      = "Challenger (CatBoost)"
         result["churn_proba"]     = churn_proba
         result["predicted_churn"] = predicted_churn
         result["threshold_used"]  = self.threshold
