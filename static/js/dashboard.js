@@ -93,7 +93,7 @@ async function loadModelInfo() {
     const res  = await fetch("/api/model_info");
     const data = await res.json();
     window._modelData = data;
-    updateModelCard("catboost");
+    updateModelCard("xgboost");
   } catch (_) { /* sunucu henüz hazır değilse sessizce geç */ }
 }
 
