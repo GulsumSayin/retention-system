@@ -103,8 +103,8 @@ function updateModelCard(key) {
   const metrics = m.metrics || {};
   document.getElementById("mcAlgo").textContent =
     key === "catboost" ? "CatBoostClassifier" : "XGBClassifier";
-  document.getElementById("mcThreshold").textContent =
-    m.threshold != null ? m.threshold.toFixed(3) : "—";
+  document.getElementById("mcF1").textContent =
+    metrics.f1 != null ? metrics.f1.toFixed(3) : "—";
   document.getElementById("mcRoc").textContent =
     metrics.roc_auc != null ? metrics.roc_auc.toFixed(4) : "—";
   document.getElementById("mcPrauc").textContent =
