@@ -228,41 +228,58 @@ async function runAnalysis() {
 /* ==========================================================================
    SHAP Bireysel Açıklama Modal
    ========================================================================== */
-let _shapRows = {};
+let _shapRows   = {};
 let _profileData = {};
 
-function openShapModal(custId) {
+// Event delegation — inline onclick yerine; HTML encoding sorunlarını önler
+document.addEventListener("click", function (e) {
+  const tr = e.target.closest("tr[data-shap-id]");
+  if (!tr) return;
+  _openShapModal(tr.dataset.shapId);
+});
+
+document.addEventListener("keydown", function (e) {
+  if (e.key === "Escape") _closeShapModal();
+});
+
+function _closeShapModal() {
+  document.getElementById("shapModal").style.display = "none";
+}
+// Global olarak HTML onclick="" ile çağrılabilmesi için
+window.closeShapModal = _closeShapModal;
+
+function _openShapModal(custId) {
+  const rows       = _shapRows[custId];
   const profileData = _profileData[custId] || null;
-  const rows = _shapRows[custId];
   if (!rows || rows.length === 0) return;
 
-  document.getElementById("shapModalTitle").textContent = `SHAP Açıklaması — ${custId}`;
+  document.getElementById("shapModalTitle").textContent = "SHAP Açıklaması — " + custId;
 
-  // Profil özeti
   const profile = document.getElementById("shapModalProfile");
   if (profileData) {
     const items = [
-      ["Terk Riski",      profileData.churn_proba != null ? `%${(parseFloat(profileData.churn_proba)*100).toFixed(1)}` : null],
-      ["Müşteri Değeri",  profileData.estimated_clv != null ? `${fmtTL(profileData.estimated_clv)} TL` : null],
-      ["Risk Seviyesi",   profileData.risk_level || null],
-      ["Aksiyon",         profileData.action_category || null],
-    ].filter(([,v]) => v);
-    profile.innerHTML = items.map(([k,v]) =>
-      `<span style="background:#f1f5f9;padding:3px 10px;border-radius:20px;"><strong>${k}:</strong> ${escHtml(String(v))}</span>`
-    ).join("");
+      ["Terk Riski",     profileData.churn_proba    != null ? "%" + (parseFloat(profileData.churn_proba) * 100).toFixed(1) : null],
+      ["Müşteri Değeri", profileData.estimated_clv  != null ? fmtTL(profileData.estimated_clv) + " TL"                    : null],
+      ["Risk Seviyesi",  profileData.risk_level      || null],
+      ["Aksiyon",        profileData.action_category || null],
+    ].filter(function(p){ return p[1]; });
+    profile.innerHTML = items.map(function(p){
+      return '<span style="background:#f1f5f9;padding:3px 10px;border-radius:20px;"><strong>' +
+             escHtml(p[0]) + ":</strong> " + escHtml(String(p[1])) + "</span>";
+    }).join("");
   } else {
     profile.innerHTML = "";
   }
 
-  const labels = rows.map(r => r.label);
-  const values = rows.map(r => r.shap_value);
-  const colors = values.map(v => v > 0 ? "#ef4444" : "#22c55e");
+  const labels = rows.map(function(r){ return r.label; });
+  const values = rows.map(function(r){ return r.shap_value; });
+  const colors = values.map(function(v){ return v > 0 ? "#ef4444" : "#22c55e"; });
 
   Plotly.newPlot("shapModalChart", [{
     type: "bar", orientation: "h",
     x: values, y: labels,
     marker: { color: colors },
-    text: values.map(v => v.toFixed(3)),
+    text: values.map(function(v){ return v.toFixed(3); }),
     textposition: "outside",
     hovertemplate: "%{y}: %{x:.3f}<extra></extra>",
   }], {
@@ -276,20 +293,13 @@ function openShapModal(custId) {
   document.getElementById("shapModal").style.display = "flex";
 }
 
-function closeShapModal() {
-  document.getElementById("shapModal").style.display = "none";
-}
-
-document.addEventListener("keydown", e => { if (e.key === "Escape") closeShapModal(); });
-
 function renderResults(data) {
   const { summary, advantage, portfolio_comment, strategy_comment,
           ab_test, charts, candidate_table, optimized_table, comparison_table,
           shap_rows } = data;
 
-  _shapRows = shap_rows || {};
+  _shapRows    = shap_rows || {};
   _profileData = {};
-  console.log("[SHAP] shap_rows alındı —", Object.keys(_shapRows).length, "müşteri.", Object.keys(_shapRows).slice(0, 3));
 
   // Portföy yorum paneli
   setInnerHTML("portfolioComment",
@@ -559,19 +569,24 @@ function renderTable(wrapperId, rows, headers, cellFn) {
     return;
   }
 
-  const cols  = Object.keys(headers).filter(k => rows[0].hasOwnProperty(k));
-  const thead = cols.map(k => `<th>${headers[k]}</th>`).join("");
+  const cols        = Object.keys(headers).filter(k => rows[0].hasOwnProperty(k));
+  const thead       = cols.map(k => `<th>${headers[k]}</th>`).join("");
   const isOptimized = wrapperId === "optimizedTableWrap";
   const tbody = rows.map(row => {
-    const idVal = row["CustomerID"] || row["customerID"] || row["CUSTOMERID"] || "";
+    const idVal     = row["CustomerID"] || row["customerID"] || row["CUSTOMERID"] || "";
     const clickable = isOptimized && idVal && _shapRows[idVal];
-    if (isOptimized) console.log("[SHAP] satır:", idVal, "| eşleşme:", !!clickable);
     if (clickable) {
-      _profileData[idVal] = { churn_proba: row.churn_proba, estimated_clv: row.estimated_clv, risk_level: row.risk_level, action_category: row.action_category };
+      _profileData[idVal] = {
+        churn_proba:     row.churn_proba,
+        estimated_clv:   row.estimated_clv,
+        risk_level:      row.risk_level,
+        action_category: row.action_category,
+      };
     }
-    const trStyle = clickable ? ' style="cursor:pointer;" title="SHAP açıklaması için tıklayın"' : "";
-    const trClick = clickable ? ` onclick="openShapModal('${escHtml(String(idVal))}')"` : "";
-    return `<tr${trStyle}${trClick}>${cols.map(k => `<td title="${escHtml(String(row[k] ?? ""))}">${cellFn(k, row[k], row)}</td>`).join("")}</tr>`;
+    const trAttrs = clickable
+      ? ` data-shap-id="${escHtml(String(idVal))}" style="cursor:pointer;" title="SHAP açıklaması için tıklayın"`
+      : "";
+    return `<tr${trAttrs}>${cols.map(k => `<td title="${escHtml(String(row[k] ?? ""))}">${cellFn(k, row[k], row)}</td>`).join("")}</tr>`;
   }).join("");
 
   document.getElementById(wrapperId).innerHTML =
