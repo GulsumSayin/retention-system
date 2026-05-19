@@ -48,6 +48,7 @@ from optimization         import RetentionOptimizer
 from evaluation           import StrategyEvaluator, ABTestSimulator
 from shap_service         import ShapService
 from data_validator       import DataValidator
+from preprocessing        import prepare_xgb_input, prepare_cat_input
 from model_comparator     import ModelComparator
 from sensitivity_analysis import run_oat_sensitivity
 from llm_service          import (
@@ -461,13 +462,24 @@ def analyze():
             for col in reversed(_extra_col_names):
                 predictions.insert(0, col, _extra_cols[col].values)
 
-        # 2 — SHAP
-        shap_fitted = False
+        # 2 — SHAP (önişlenmiş numerik özellik matrisi üzerinde çalışır)
+        shap_fitted  = False
+        X_shap       = None   # model_columns hizalı numerik DataFrame
+        feature_cols = []
         try:
-            model_obj    = router.cat_service.model if model_key == "catboost" else router.xgb_service.model
-            _meta_cols   = set(_extra_col_names or []) | {"churn_proba", "predicted_churn", "threshold_used", "model_name"}
-            feature_cols = [c for c in predictions.columns if c not in _meta_cols]
-            shap_svc.fit(model_obj, predictions[feature_cols])
+            model_obj = router.cat_service.model if model_key == "catboost" else router.xgb_service.model
+            if model_key == "catboost":
+                svc = router.cat_service
+                X_shap = prepare_cat_input(
+                    raw_df, svc.train_medians, svc.feature_columns, svc.drop_cols
+                )
+                feature_cols = list(X_shap.columns)
+            else:
+                svc = router.xgb_service
+                X_shap, _ = prepare_xgb_input(raw_df, svc.train_medians, svc.model_columns)
+                feature_cols = list(X_shap.columns)
+            X_shap = X_shap.reset_index(drop=True)
+            shap_svc.fit(model_obj, X_shap)
             agent.set_shap_service(shap_svc, feature_cols)
             shap_fitted = True
         except Exception as shap_err:
@@ -507,34 +519,59 @@ def analyze():
         charts["roi_dist"] = _plot_roi_distribution(optimized)
 
     # SHAP grafiği + bireysel açıklamalar
+    # X_shap: önişlenmiş numerik matris (model_columns hizalı, reset_index yapılmış)
+    # Satır sırası raw_df ile aynı → customerID üzerinden güvenli eşleştirme yapılır.
     shap_rows = {}
-    if shap_fitted:
-        _non_feature = set(_extra_col_names or []) | {
-            "churn_proba", "predicted_churn", "threshold_used", "model_name",
-            "risk_level", "action_category", "action_detail", "action_channel",
-            "action_priority", "personalization_note", "action", "action_reason",
-            "retention_uplift", "expected_saved_value", "estimated_clv",
-            "expected_loss", "priority_score", "ranking_score", "lifetime_value",
-        }
-        shap_cols = [c for c in candidate_pool.columns if c not in _non_feature]
-        shap_fig  = shap_svc.plot_shap_bar(candidate_pool[shap_cols], top_n=10,
-                                            title="Churn Tahminine En Çok Katkıda Bulunan 10 Değişken")
+    if shap_fitted and X_shap is not None:
+        # Global SHAP bar (portfolyo görünümü)
+        shap_fig = shap_svc.plot_shap_bar(
+            X_shap, top_n=10,
+            title="Churn Tahminine En Çok Katkıda Bulunan 10 Değişken",
+        )
         if shap_fig:
             charts["shap_bar"] = _fig_to_json(shap_fig)
 
         # Bireysel SHAP — her aday için waterfall verisi
-        feat_data = predictions[feature_cols]
+        # X_shap satırları raw_df ile aynı sırada (her ikisi reset_index yapılmış).
+        # candidate_pool ise agent.run() tarafından yeniden sıralanmış;
+        # bu yüzden customerID üzerinden eşleştirme yapılır.
         id_col = _extra_col_names[0] if _extra_col_names else None
+
+        # customerID → X_shap satır indeksi (raw_df satır sırası ile aynı)
+        if id_col and id_col in raw_df.columns:
+            xshap_id_map = {
+                str(raw_df.iloc[i][id_col]): i for i in range(len(raw_df))
+            }
+        else:
+            xshap_id_map = None
+
         for idx in candidate_pool.index:
-            if idx not in feat_data.index:
-                continue
             try:
-                wd = shap_svc.waterfall_data(feat_data.loc[idx], feature_cols, top_n=8)
-                if wd is not None:
-                    cust_id = str(candidate_pool.loc[idx, id_col]) if id_col else str(idx)
-                    shap_rows[cust_id] = wd[["label", "shap_value", "direction"]].to_dict(orient="records")
-            except Exception:
-                pass
+                if id_col and xshap_id_map is not None:
+                    cust_id  = str(candidate_pool.at[idx, id_col])
+                    shap_idx = xshap_id_map.get(cust_id)
+                    if shap_idx is None or shap_idx >= len(X_shap):
+                        continue
+                    row_data = X_shap.iloc[shap_idx]
+                else:
+                    cust_id  = str(idx)
+                    if idx >= len(X_shap):
+                        continue
+                    row_data = X_shap.iloc[idx]
+
+                wd = shap_svc.waterfall_data(row_data, feature_cols, top_n=8)
+                if wd is not None and not wd.empty:
+                    shap_rows[cust_id] = [
+                        {
+                            "label":      str(r["label"]),
+                            "shap_value": float(r["shap_value"]),
+                            "direction":  str(r["direction"]),
+                        }
+                        for _, r in wd[["label", "shap_value", "direction"]].iterrows()
+                    ]
+            except Exception as _shap_exc:
+                logger.warning("Bireysel SHAP hesaplanamadı (idx=%s): %s", idx, _shap_exc)
+    logger.info("SHAP bireysel hesaplama tamamlandı: %d müşteri", len(shap_rows))
 
     # --- Tablo verileri (JSON serializasyon için NaN temizleme) -------------
     def _df_to_records(df: pd.DataFrame, cols: list) -> list:

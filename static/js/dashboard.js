@@ -229,8 +229,10 @@ async function runAnalysis() {
    SHAP Bireysel Açıklama Modal
    ========================================================================== */
 let _shapRows = {};
+let _profileData = {};
 
-function openShapModal(custId, profileData) {
+function openShapModal(custId) {
+  const profileData = _profileData[custId] || null;
   const rows = _shapRows[custId];
   if (!rows || rows.length === 0) return;
 
@@ -286,6 +288,8 @@ function renderResults(data) {
           shap_rows } = data;
 
   _shapRows = shap_rows || {};
+  _profileData = {};
+  console.log("[SHAP] shap_rows alındı —", Object.keys(_shapRows).length, "müşteri.", Object.keys(_shapRows).slice(0, 3));
 
   // Portföy yorum paneli
   setInnerHTML("portfolioComment",
@@ -561,8 +565,12 @@ function renderTable(wrapperId, rows, headers, cellFn) {
   const tbody = rows.map(row => {
     const idVal = row["CustomerID"] || row["customerID"] || row["CUSTOMERID"] || "";
     const clickable = isOptimized && idVal && _shapRows[idVal];
+    if (isOptimized) console.log("[SHAP] satır:", idVal, "| eşleşme:", !!clickable);
+    if (clickable) {
+      _profileData[idVal] = { churn_proba: row.churn_proba, estimated_clv: row.estimated_clv, risk_level: row.risk_level, action_category: row.action_category };
+    }
     const trStyle = clickable ? ' style="cursor:pointer;" title="SHAP açıklaması için tıklayın"' : "";
-    const trClick = clickable ? ` onclick="openShapModal('${escHtml(String(idVal))}', ${JSON.stringify({churn_proba:row.churn_proba, estimated_clv:row.estimated_clv, risk_level:row.risk_level, action_category:row.action_category})})"` : "";
+    const trClick = clickable ? ` onclick="openShapModal('${escHtml(String(idVal))}')"` : "";
     return `<tr${trStyle}${trClick}>${cols.map(k => `<td title="${escHtml(String(row[k] ?? ""))}">${cellFn(k, row[k], row)}</td>`).join("")}</tr>`;
   }).join("");
 
