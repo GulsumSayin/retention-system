@@ -506,7 +506,8 @@ def analyze():
     if len(optimized) > 0:
         charts["roi_dist"] = _plot_roi_distribution(optimized)
 
-    # SHAP grafiği
+    # SHAP grafiği + bireysel açıklamalar
+    shap_rows = {}
     if shap_fitted:
         _non_feature = set(_extra_col_names or []) | {
             "churn_proba", "predicted_churn", "threshold_used", "model_name",
@@ -520,6 +521,20 @@ def analyze():
                                             title="Churn Tahminine En Çok Katkıda Bulunan 10 Değişken")
         if shap_fig:
             charts["shap_bar"] = _fig_to_json(shap_fig)
+
+        # Bireysel SHAP — her aday için waterfall verisi
+        feat_data = predictions[feature_cols]
+        id_col = _extra_col_names[0] if _extra_col_names else None
+        for idx in candidate_pool.index:
+            if idx not in feat_data.index:
+                continue
+            try:
+                wd = shap_svc.waterfall_data(feat_data.loc[idx], feature_cols, top_n=8)
+                if wd is not None:
+                    cust_id = str(candidate_pool.loc[idx, id_col]) if id_col else str(idx)
+                    shap_rows[cust_id] = wd[["label", "shap_value", "direction"]].to_dict(orient="records")
+            except Exception:
+                pass
 
     # --- Tablo verileri (JSON serializasyon için NaN temizleme) -------------
     def _df_to_records(df: pd.DataFrame, cols: list) -> list:
@@ -625,6 +640,7 @@ def analyze():
         "strategy_comment":    strategy_comment,
         "ab_test":             ab_results,
         "charts":              charts,
+        "shap_rows":           shap_rows,
         "candidate_table":     _df_to_records(candidate_pool.head(20), CAND_COLS),
         "optimized_table":     _df_to_records(optimized.head(20), OPT_COLS),
         "comparison_table":    _df_to_records(comparison_df, COMP_COLS),

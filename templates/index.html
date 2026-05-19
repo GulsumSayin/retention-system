@@ -211,7 +211,20 @@
       Müşteriler, kayıp riski ve beklenen finansal etki dikkate alınarak öncelik sırasına göre sıralanmıştır.
       Her müşteri için önerilen aksiyon ve iletişim kanalı gösterilmektedir.
     </p>
+    <p class="section-caption" style="font-size:0.78rem;color:#64748b;margin-top:-6px;">
+      💡 Bir müşteri satırına tıklayarak bireysel SHAP açıklamasını görebilirsiniz.
+    </p>
     <div class="table-wrap" id="candidateTableWrap"></div>
+
+    <!-- SHAP Modal -->
+    <div id="shapModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:9999;align-items:center;justify-content:center;">
+      <div style="background:#fff;border-radius:12px;padding:28px 32px;max-width:560px;width:90%;position:relative;box-shadow:0 8px 40px rgba(0,0,0,0.18);">
+        <button onclick="closeShapModal()" style="position:absolute;top:14px;right:18px;background:none;border:none;font-size:1.4rem;cursor:pointer;color:#64748b;">✕</button>
+        <h3 id="shapModalTitle" style="margin:0 0 4px;font-size:1rem;color:#0f172a;"></h3>
+        <p style="margin:0 0 14px;font-size:0.75rem;color:#64748b;">Kırmızı → churn riski artar &nbsp;|&nbsp; Yeşil → risk azalır</p>
+        <div id="shapModalChart" style="min-height:260px;"></div>
+      </div>
+    </div>
 
     <hr class="divider" />
 

@@ -225,9 +225,52 @@ async function runAnalysis() {
 /* ==========================================================================
    Sonuçları render etme
    ========================================================================== */
+/* ==========================================================================
+   SHAP Bireysel Açıklama Modal
+   ========================================================================== */
+let _shapRows = {};
+
+function openShapModal(custId) {
+  const rows = _shapRows[custId];
+  if (!rows || rows.length === 0) return;
+
+  document.getElementById("shapModalTitle").textContent = `SHAP Açıklaması — ${custId}`;
+
+  const labels = rows.map(r => r.label);
+  const values = rows.map(r => r.shap_value);
+  const colors = values.map(v => v > 0 ? "#ef4444" : "#22c55e");
+
+  Plotly.newPlot("shapModalChart", [{
+    type: "bar", orientation: "h",
+    x: values, y: labels,
+    marker: { color: colors },
+    text: values.map(v => v.toFixed(3)),
+    textposition: "outside",
+    hovertemplate: "%{y}: %{x:.3f}<extra></extra>",
+  }], {
+    height: 280,
+    margin: { t: 10, b: 40, l: 10, r: 60 },
+    xaxis: { title: "SHAP Değeri", zeroline: true, zerolinecolor: "#cbd5e1" },
+    yaxis: { automargin: true },
+    paper_bgcolor: "white", plot_bgcolor: "white",
+  }, { responsive: true, displayModeBar: false });
+
+  const modal = document.getElementById("shapModal");
+  modal.style.display = "flex";
+}
+
+function closeShapModal() {
+  document.getElementById("shapModal").style.display = "none";
+}
+
+document.addEventListener("keydown", e => { if (e.key === "Escape") closeShapModal(); });
+
 function renderResults(data) {
   const { summary, advantage, portfolio_comment, strategy_comment,
-          ab_test, charts, candidate_table, optimized_table, comparison_table } = data;
+          ab_test, charts, candidate_table, optimized_table, comparison_table,
+          shap_rows } = data;
+
+  _shapRows = shap_rows || {};
 
   // Portföy yorum paneli
   setInnerHTML("portfolioComment",
@@ -505,9 +548,14 @@ function renderTable(wrapperId, rows, headers, cellFn) {
 
   const cols  = Object.keys(headers).filter(k => rows[0].hasOwnProperty(k));
   const thead = cols.map(k => `<th>${headers[k]}</th>`).join("");
-  const tbody = rows.map(row =>
-    `<tr>${cols.map(k => `<td title="${escHtml(String(row[k] ?? ""))}">${cellFn(k, row[k], row)}</td>`).join("")}</tr>`
-  ).join("");
+  const isCandidate = wrapperId === "candidateTableWrap";
+  const tbody = rows.map(row => {
+    const idVal = row["CustomerID"] || row["customerID"] || row["CUSTOMERID"] || "";
+    const clickable = isCandidate && idVal && _shapRows[idVal];
+    const trStyle = clickable ? ' style="cursor:pointer;" title="SHAP açıklaması için tıklayın"' : "";
+    const trClick = clickable ? ` onclick="openShapModal('${escHtml(String(idVal))}')"` : "";
+    return `<tr${trStyle}${trClick}>${cols.map(k => `<td title="${escHtml(String(row[k] ?? ""))}">${cellFn(k, row[k], row)}</td>`).join("")}</tr>`;
+  }).join("");
 
   document.getElementById(wrapperId).innerHTML =
     `<div class="table-wrap"><table class="data-table">
