@@ -60,4 +60,4 @@ Proje; **Procfile**, **runtime.txt** ve **railway.json** dosyalarıyla bulut ort
 Proje, donanım kısıtlamalarına uyum sağlamak için iki farklı modda çalışabilir:
 
 * **AI Destekli Mod (Local):** Yüksek işlem gücü ile derinlemesine duygu ve içerik analizi yapar.
-* **Çevik Mod (Web):** Kural tabanlı mantık ile düşük kaynak tüketerek hızlı sonuç üretir[cite: 69, 76, 84.
+* **Çevik Mod (Web):** Kural tabanlı mantık ile düşük kaynak tüketerek hızlı sonuç üretir.
