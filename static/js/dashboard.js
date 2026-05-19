@@ -230,11 +230,27 @@ async function runAnalysis() {
    ========================================================================== */
 let _shapRows = {};
 
-function openShapModal(custId) {
+function openShapModal(custId, profileData) {
   const rows = _shapRows[custId];
   if (!rows || rows.length === 0) return;
 
   document.getElementById("shapModalTitle").textContent = `SHAP Açıklaması — ${custId}`;
+
+  // Profil özeti
+  const profile = document.getElementById("shapModalProfile");
+  if (profileData) {
+    const items = [
+      ["Terk Riski",      profileData.churn_proba != null ? `%${(parseFloat(profileData.churn_proba)*100).toFixed(1)}` : null],
+      ["Müşteri Değeri",  profileData.estimated_clv != null ? `${fmtTL(profileData.estimated_clv)} TL` : null],
+      ["Risk Seviyesi",   profileData.risk_level || null],
+      ["Aksiyon",         profileData.action_category || null],
+    ].filter(([,v]) => v);
+    profile.innerHTML = items.map(([k,v]) =>
+      `<span style="background:#f1f5f9;padding:3px 10px;border-radius:20px;"><strong>${k}:</strong> ${escHtml(String(v))}</span>`
+    ).join("");
+  } else {
+    profile.innerHTML = "";
+  }
 
   const labels = rows.map(r => r.label);
   const values = rows.map(r => r.shap_value);
@@ -248,15 +264,14 @@ function openShapModal(custId) {
     textposition: "outside",
     hovertemplate: "%{y}: %{x:.3f}<extra></extra>",
   }], {
-    height: 280,
-    margin: { t: 10, b: 40, l: 10, r: 60 },
+    height: 300,
+    margin: { t: 10, b: 40, l: 10, r: 70 },
     xaxis: { title: "SHAP Değeri", zeroline: true, zerolinecolor: "#cbd5e1" },
     yaxis: { automargin: true },
     paper_bgcolor: "white", plot_bgcolor: "white",
   }, { responsive: true, displayModeBar: false });
 
-  const modal = document.getElementById("shapModal");
-  modal.style.display = "flex";
+  document.getElementById("shapModal").style.display = "flex";
 }
 
 function closeShapModal() {
@@ -292,12 +307,6 @@ function renderResults(data) {
   if (charts.roi_dist) {
     renderChart("chartRoiDist", charts.roi_dist);
     document.getElementById("roiCard").classList.remove("hidden");
-  }
-
-  // SHAP
-  if (charts.shap_bar) {
-    renderChart("chartShapBar", charts.shap_bar);
-    document.getElementById("shapSection").classList.remove("hidden");
   }
 
   // Tablo başlıkları
@@ -548,12 +557,12 @@ function renderTable(wrapperId, rows, headers, cellFn) {
 
   const cols  = Object.keys(headers).filter(k => rows[0].hasOwnProperty(k));
   const thead = cols.map(k => `<th>${headers[k]}</th>`).join("");
-  const isCandidate = wrapperId === "candidateTableWrap";
+  const isOptimized = wrapperId === "optimizedTableWrap";
   const tbody = rows.map(row => {
     const idVal = row["CustomerID"] || row["customerID"] || row["CUSTOMERID"] || "";
-    const clickable = isCandidate && idVal && _shapRows[idVal];
+    const clickable = isOptimized && idVal && _shapRows[idVal];
     const trStyle = clickable ? ' style="cursor:pointer;" title="SHAP açıklaması için tıklayın"' : "";
-    const trClick = clickable ? ` onclick="openShapModal('${escHtml(String(idVal))}')"` : "";
+    const trClick = clickable ? ` onclick="openShapModal('${escHtml(String(idVal))}', ${JSON.stringify({churn_proba:row.churn_proba, estimated_clv:row.estimated_clv, risk_level:row.risk_level, action_category:row.action_category})})"` : "";
     return `<tr${trStyle}${trClick}>${cols.map(k => `<td title="${escHtml(String(row[k] ?? ""))}">${cellFn(k, row[k], row)}</td>`).join("")}</tr>`;
   }).join("");
 

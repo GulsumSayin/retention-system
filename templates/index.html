@@ -189,20 +189,6 @@
       <div id="chartRoiDist"></div>
     </div>
 
-    <!-- Faktörler / SHAP -->
-    <div id="shapSection" class="hidden">
-      <hr class="divider" />
-      <h2>
-        Müşteri Kaybını Etkileyen Faktörler
-        <span class="info-icon info-icon--dark" data-tip="Bu grafik, müşterilerin ayrılma kararını en çok etkileyen unsurları önem sırasına göre göstermektedir. Daha uzun çubuklar, o faktörün kararı daha güçlü etkilediği anlamına gelir.">ⓘ</span>
-      </h2>
-      <p class="section-caption">
-        Aşağıdaki faktörler, müşteri kaybı riskini artıran veya azaltan unsurları
-        büyükten küçüğe sıralamaktadır. Hangi konulara odaklanmanız gerektiğini gösterir.
-      </p>
-      <div class="chart-card"><div id="chartShapBar"></div></div>
-    </div>
-
     <hr class="divider" />
 
     <!-- Aday müşteri tablosu -->
@@ -211,20 +197,7 @@
       Müşteriler, kayıp riski ve beklenen finansal etki dikkate alınarak öncelik sırasına göre sıralanmıştır.
       Her müşteri için önerilen aksiyon ve iletişim kanalı gösterilmektedir.
     </p>
-    <p class="section-caption" style="font-size:0.78rem;color:#64748b;margin-top:-6px;">
-      💡 Bir müşteri satırına tıklayarak bireysel SHAP açıklamasını görebilirsiniz.
-    </p>
     <div class="table-wrap" id="candidateTableWrap"></div>
-
-    <!-- SHAP Modal -->
-    <div id="shapModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:9999;align-items:center;justify-content:center;">
-      <div style="background:#fff;border-radius:12px;padding:28px 32px;max-width:560px;width:90%;position:relative;box-shadow:0 8px 40px rgba(0,0,0,0.18);">
-        <button onclick="closeShapModal()" style="position:absolute;top:14px;right:18px;background:none;border:none;font-size:1.4rem;cursor:pointer;color:#64748b;">✕</button>
-        <h3 id="shapModalTitle" style="margin:0 0 4px;font-size:1rem;color:#0f172a;"></h3>
-        <p style="margin:0 0 14px;font-size:0.75rem;color:#64748b;">Kırmızı → churn riski artar &nbsp;|&nbsp; Yeşil → risk azalır</p>
-        <div id="shapModalChart" style="min-height:260px;"></div>
-      </div>
-    </div>
 
     <hr class="divider" />
 
@@ -233,7 +206,21 @@
     <p class="section-caption">
       Kampanya bütçenizi en verimli şekilde kullanmak için seçilen müşteriler ve önerilen aksiyonlar aşağıda listelenmiştir.
     </p>
+    <p class="section-caption" style="font-size:0.78rem;color:#64748b;margin-top:-6px;">
+      💡 Bir müşteri satırına tıklayarak bireysel SHAP açıklamasını görebilirsiniz.
+    </p>
     <div class="table-wrap" id="optimizedTableWrap"></div>
+
+    <!-- SHAP Modal -->
+    <div id="shapModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:9999;align-items:center;justify-content:center;">
+      <div style="background:#fff;border-radius:12px;padding:28px 32px;max-width:580px;width:92%;position:relative;box-shadow:0 8px 40px rgba(0,0,0,0.18);">
+        <button onclick="closeShapModal()" style="position:absolute;top:14px;right:18px;background:none;border:none;font-size:1.4rem;cursor:pointer;color:#64748b;">✕</button>
+        <h3 id="shapModalTitle" style="margin:0 0 4px;font-size:1rem;color:#0f172a;"></h3>
+        <p style="margin:0 0 14px;font-size:0.75rem;color:#64748b;">Kırmızı → churn riski artar &nbsp;|&nbsp; Yeşil → risk azalır</p>
+        <div id="shapModalProfile" style="display:flex;gap:16px;flex-wrap:wrap;margin-bottom:14px;font-size:0.78rem;color:#334155;"></div>
+        <div id="shapModalChart" style="min-height:260px;"></div>
+      </div>
+    </div>
 
     <!-- İndirme butonları — aksiyon planının hemen altında -->
     <div id="downloadSection" class="download-block hidden">
