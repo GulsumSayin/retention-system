@@ -21,6 +21,7 @@ LLM düzeltmeleri (saçmalama giderme):
   - Prompt: format instruction kaldırıldı, sadece görev tanımı bırakıldı
   - Çıktı temizleme: Markdown, madde işareti, fazla cümle
 """
+# .
 
 import os
 import re
