@@ -459,5 +459,20 @@
     "ab_p_value": 0.000407,
     "ab_power": 0.9765,
     "ab_significant": true
+  },
+  {
+    "timestamp": "2026-05-23T21:05:47.930615",
+    "session_id": "9a517e89-7e32-4b9b-a1a4-9ae49d97ecad",
+    "model_key": "xgboost",
+    "total_customers": 100,
+    "high_risk_count": 11,
+    "avg_churn": 0.3115,
+    "selected_count": 20,
+    "selected_budget": 306.72,
+    "selected_net_benefit": 2840.69,
+    "avg_roi": 9.346,
+    "ab_p_value": 0.000407,
+    "ab_power": 0.9765,
+    "ab_significant": true
   }
 ]
