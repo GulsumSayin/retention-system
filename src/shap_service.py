@@ -47,28 +47,28 @@ except ImportError:
 # Feature açıklama sözlüğü — teknik isimler → Türkçe iş dili
 # ---------------------------------------------------------------------------
 _FEATURE_LABELS: dict[str, str] = {
-    "MonthlyCharges":                   "yüksek aylık ücret",
-    "tenure":                           "kısa müşteri süresi",
-    "IsMonthToMonth":                   "aylık sözleşme",
-    "Contract_Month-to-month":          "aylık sözleşme",
-    "UsesAutoPayment":                  "otomatik ödeme kullanmıyor",
-    "NoProtectionFlag":                 "koruma servisleri zayıf",
-    "ServiceIntensity":                 "düşük servis yoğunluğu",
-    "NumServices":                      "az servis kullanımı",
-    "TechSupport_No":                   "teknik destek yok",
-    "OnlineSecurity_No":                "online güvenlik yok",
-    "DeviceProtection_No":              "cihaz koruması yok",
-    "InternetService_Fiber optic":      "fiber internet + yüksek ücret",
-    "PaymentMethod_Electronic check":   "elektronik çek ödeme riski",
-    "HighRiskProfile":                  "yüksek risk profili",
-    "ShortTenure_HighCharge":           "kısa süre + yüksek ücret",
-    "MonthToMonth_ElectronicCheck":     "aylık sözleşme + elektronik çek",
-    "FamilyRisk":                       "aile bağı zayıf",
-    "ContractScore":                    "sözleşme riski",
-    "ChargesPerService":                "servis başına yüksek ücret",
-    "TenureGroup_0_12":                 "yeni müşteri (0-12 ay)",
-    "IsNewCustomer":                    "yeni müşteri",
-    "AvgMonthlySpend":                  "ortalama aylık harcama",
+    "MonthlyCharges":                   "High Monthly Charge",
+    "tenure":                           "Short Tenure",
+    "IsMonthToMonth":                   "Month-to-Month Contract",
+    "Contract_Month-to-month":          "Month-to-Month Contract",
+    "UsesAutoPayment":                  "No Auto Payment",
+    "NoProtectionFlag":                 "Weak Protection Services",
+    "ServiceIntensity":                 "Low Service Intensity",
+    "NumServices":                      "Few Services Used",
+    "TechSupport_No":                   "No Tech Support",
+    "OnlineSecurity_No":                "No Online Security",
+    "DeviceProtection_No":              "No Device Protection",
+    "InternetService_Fiber optic":      "Fiber Internet + High Charge",
+    "PaymentMethod_Electronic check":   "Electronic Check Payment Risk",
+    "HighRiskProfile":                  "High Risk Profile",
+    "ShortTenure_HighCharge":           "Short Tenure + High Charge",
+    "MonthToMonth_ElectronicCheck":     "Month-to-Month + Electronic Check",
+    "FamilyRisk":                       "Weak Family Bond",
+    "ContractScore":                    "Contract Risk Score",
+    "ChargesPerService":                "High Charge per Service",
+    "TenureGroup_0_12":                 "New Customer (0–12 months)",
+    "IsNewCustomer":                    "New Customer",
+    "AvgMonthlySpend":                  "Avg Monthly Spend",
 }
 
 
@@ -306,7 +306,7 @@ class ShapService:
             df = df.reindex(df["shap_value"].abs().sort_values(ascending=False).index)
             df = df.head(top_n).reset_index(drop=True)
             df["direction"] = df["shap_value"].apply(
-                lambda v: "Churn riskini artırıyor" if v > 0 else "Churn riskini azaltıyor"
+                lambda v: "Increases churn risk" if v > 0 else "Reduces churn risk"
             )
             return df
         except Exception as exc:

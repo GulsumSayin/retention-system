@@ -253,15 +253,15 @@ function _openShapModal(custId) {
   const profileData = _profileData[custId] || null;
   if (!rows || rows.length === 0) return;
 
-  document.getElementById("shapModalTitle").textContent = "SHAP Açıklaması — " + custId;
+  document.getElementById("shapModalTitle").textContent = "SHAP Explanation — " + custId;
 
   const profile = document.getElementById("shapModalProfile");
   if (profileData) {
     const items = [
-      ["Terk Riski",     profileData.churn_proba    != null ? "%" + (parseFloat(profileData.churn_proba) * 100).toFixed(1) : null],
-      ["Müşteri Değeri", profileData.estimated_clv  != null ? fmtTL(profileData.estimated_clv) + " TL"                    : null],
-      ["Risk Seviyesi",  profileData.risk_level      || null],
-      ["Aksiyon",        profileData.action_category || null],
+      ["Churn Risk",      profileData.churn_proba    != null ? "%" + (parseFloat(profileData.churn_proba) * 100).toFixed(1) : null],
+      ["Customer Value",  profileData.estimated_clv  != null ? fmtTL(profileData.estimated_clv) + " TL"                    : null],
+      ["Risk Level",      profileData.risk_level      || null],
+      ["Action",          profileData.action_category || null],
     ].filter(function(p){ return p[1]; });
     profile.innerHTML = items.map(function(p){
       return '<span style="background:#f1f5f9;padding:3px 10px;border-radius:20px;"><strong>' +
@@ -283,9 +283,9 @@ function _openShapModal(custId) {
     textposition: "outside",
     hovertemplate: "%{y}: %{x:.3f}<extra></extra>",
   }], {
-    height: 300,
-    margin: { t: 10, b: 40, l: 10, r: 70 },
-    xaxis: { title: "SHAP Değeri", zeroline: true, zerolinecolor: "#cbd5e1" },
+    height: 320,
+    margin: { t: 10, b: 45, l: 10, r: 90 },
+    xaxis: { title: "SHAP Value", zeroline: true, zerolinecolor: "#cbd5e1", automargin: true },
     yaxis: { automargin: true },
     paper_bgcolor: "white", plot_bgcolor: "white",
   }, { responsive: true, displayModeBar: false });

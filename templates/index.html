@@ -212,11 +212,11 @@
     <div class="table-wrap" id="optimizedTableWrap"></div>
 
     <!-- SHAP Modal -->
-    <div id="shapModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:9999;align-items:center;justify-content:center;">
-      <div style="background:#fff;border-radius:12px;padding:28px 32px;max-width:580px;width:92%;position:relative;box-shadow:0 8px 40px rgba(0,0,0,0.18);">
+    <div id="shapModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:9999;align-items:center;justify-content:center;padding:16px;">
+      <div style="background:#fff;border-radius:12px;padding:24px 28px;max-width:620px;width:100%;position:relative;box-shadow:0 8px 40px rgba(0,0,0,0.18);max-height:90vh;overflow-y:auto;">
         <button onclick="closeShapModal()" style="position:absolute;top:14px;right:18px;background:none;border:none;font-size:1.4rem;cursor:pointer;color:#64748b;">✕</button>
         <h3 id="shapModalTitle" style="margin:0 0 4px;font-size:1rem;color:#0f172a;"></h3>
-        <p style="margin:0 0 14px;font-size:0.75rem;color:#64748b;">Kırmızı → churn riski artar &nbsp;|&nbsp; Yeşil → risk azalır</p>
+        <p style="margin:0 0 14px;font-size:0.75rem;color:#64748b;">Red → increases churn risk &nbsp;|&nbsp; Green → reduces churn risk</p>
         <div id="shapModalProfile" style="display:flex;gap:16px;flex-wrap:wrap;margin-bottom:14px;font-size:0.78rem;color:#334155;"></div>
         <div id="shapModalChart" style="min-height:260px;"></div>
       </div>
