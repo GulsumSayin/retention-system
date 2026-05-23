@@ -1,6 +1,6 @@
 """
 inference_cat.py
-CatBoost Challenger modeli ile churn olasılığı tahmini.
+CatBoost Challenger modeli ile churn olasılığı tahmini
 """
 
 import logging

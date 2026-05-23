@@ -6,7 +6,7 @@ Motivasyon:
   Kullanıcı yanlış format CSV yüklediğinde sistem belirsiz bir hatayla
   çökmeye bırakılmamalı; anlamlı, aksiyona yönelik hata mesajları verilmelidir.
   Production sistemlerde "Fail Fast" prensibi: veri kalite sorunları boru
-  hattına girmeden önce yakalanır.
+  hattına girmeden önce yakalanır
 
 Doğrulama Katmanları:
   1. Şema Kontrolü: zorunlu sütunların varlığı

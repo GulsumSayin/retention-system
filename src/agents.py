@@ -93,7 +93,7 @@ def rule_based_reason(row: pd.Series) -> str:
 
 class RetentionAgent:
     """
-    Kural tabanlı müşteri tutundurma ajanı.
+    Kural tabanlı müşteri tutundurma ajanı
 
     Sorumluluklar:
       1. İş puanları hesaplama (LTV, expected_loss, estimated_clv, priority_score)

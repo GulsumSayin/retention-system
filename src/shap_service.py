@@ -312,3 +312,5 @@ class ShapService:
         except Exception as exc:
             logger.error("waterfall_data hatası: %s", exc)
             return None
+
+#.

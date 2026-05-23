@@ -12,7 +12,7 @@ Mimari Notlar:
     constructor'a enjekte edilen servisleri kullanır. Bu yaklaşım:
       - Birim testlerde mock servis geçmeyi mümkün kılar.
       - Yeni model servislerini mevcut koda dokunmadan ekler.
-      - app.py'de @st.cache_resource ile beraber kullanımı kolaylaştırır.
+      - app.py'de @st.cache_resource ile beraber kullanımı kolaylaştırır
 """
 
 import logging

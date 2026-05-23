@@ -4,7 +4,7 @@ flask_app.py — Müşteri Tutundurma Zekâsı Platformu (Flask)
 Mimari:
   Bu dosya yalnızca HTTP katmanını yönetir. İş mantığının tamamı src/ içindeki
   modüllerde kalır; Flask view'ları yalnızca serialize / deserialize görevi görür.
-  Bu ayrım, Single Responsibility Principle'ı (SRP) uygular.
+  Bu ayrım, Single Responsibility Principle'ı (SRP) uygular ve kodun test edilebilirliğini artırır.
 
 Çalıştırma:
     python flask_app.py
