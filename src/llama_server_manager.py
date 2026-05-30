@@ -3,7 +3,7 @@ llama_server_manager.py
 llama.cpp server'ı otomatik başlatan ve durumunu kontrol eden yardımcı modül.
 
 app.py tarafından import edilir; kullanıcının elle terminal komutu çalıştırmasına
-gerek kalmaz.
+gerek kalmaz
 """
 
 import os

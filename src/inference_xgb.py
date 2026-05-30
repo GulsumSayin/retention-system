@@ -1,6 +1,6 @@
 """
 inference_xgb.py
-XGBoost Champion modeli ile churn olasılığı tahmini.
+XGBoost Champion modeli ile churn olasılığı tahmini
 """
 
 import logging

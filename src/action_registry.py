@@ -1,6 +1,6 @@
 """
 action_registry.py
-Merkezi aksiyon kataloğu — tek gerçek kaynak (Single Source of Truth).
+Merkezi aksiyon kataloğu — tek gerçek kaynak (Single Source of Truth)
 
 Tasarım gerekçesi:
   agents.py ve optimization.py, daha önce aynı aksiyon adı stringlerini

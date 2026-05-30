@@ -1,6 +1,6 @@
 """
 evaluation.py
-Strateji karşılaştırma ve değerlendirme modülü.
+Strateji karşılaştırma ve değerlendirme modülü
 
 Üç stratejiyi karşılaştırır:
   1. Agent Stratejisi  — kişiselleştirilmiş aksiyon + ROI-öncelikli bütçe opt.

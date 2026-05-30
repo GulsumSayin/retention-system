@@ -165,7 +165,7 @@ class RetentionAgent:
         )
 
         # priority_score: finansal risk + operasyonel aciliyet
-        # expected_loss zaten tenure ve sözleşme tipini LTV üzerinden kodlar;
+        # expected_loss zaten tenure ve sözleşme tipini LTV üzerinden kodlar
         # IsMonthToMonth ve ServiceIntensity bağımsız operasyonel boyutları ekler.
         result["priority_score"] = (
             result["expected_loss"]

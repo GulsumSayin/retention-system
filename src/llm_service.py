@@ -332,7 +332,7 @@ def _rule_based_customer_comment(row: pd.Series) -> str:
 
 class LLMService:
     """
-    Müşteri tutundurma yorumlama servisi.
+    Müşteri tutundurma yorumlama servisi
 
     Portföy ve strateji özetleri → kural tabanlı (deterministik, savunulabilir).
     Tekil müşteri yorumu       → LLM (Qwen2.5-7B, bağlamsal doğal dil).

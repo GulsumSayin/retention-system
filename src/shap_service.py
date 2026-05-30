@@ -16,7 +16,7 @@ Akademik Katkı:
   - agents.py generate_reason() ile doğrudan entegre olur
 
 Yöntem:
-  CatBoost için shap.TreeExplainer kullanılır (native destek, hızlı).
+  CatBoost için shap.TreeExplainer kullanılır (native destek, hızlı)
   XGBoost için de aynı sınıf çalışır.
 
 DRY Notu:

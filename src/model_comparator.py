@@ -27,7 +27,7 @@ Uygulanan Testler:
 
   4. Kalibrasyon Karşılaştırması
      Brier Skoru ve Beklenen Kalibrasyon Hatası (ECE) hesaplanır.
-     İyi kalibre edilmiş model churn olasılıklarının güvenilirliğini artırır.
+     İyi kalibre edilmiş model churn olasılıklarının güvenilirliğini artırır
 
 Kullanım (app.py):
     comparator = ModelComparator(router)

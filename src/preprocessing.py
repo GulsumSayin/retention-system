@@ -30,7 +30,7 @@ def feature_engineering(
     training_stats: dict | None = None,
 ) -> pd.DataFrame:
     """
-    Ham müşteri verisinden model özellikleri üretir.
+    Ham müşteri verisinden model özellikleri üretir
 
     Parametreler
     ------------

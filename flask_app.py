@@ -508,7 +508,7 @@ def analyze():
         logger.exception("Pipeline hatası")
         return jsonify({"error": f"Analiz hatası: {err}"}), 500
 
-    # --- Grafik üretimi -----------------------------------------------------
+    # --- Grafik üretimi -----------------------------------------------------.
     charts = {
         "risk_donut":    _plot_risk_donut(candidate_pool["risk_level"].value_counts()),
         "action_bar":    _plot_action_bar(candidate_pool["action_category"].value_counts()),

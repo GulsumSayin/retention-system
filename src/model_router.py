@@ -5,7 +5,7 @@ Model seçim ve yönlendirme katmanı.
 Mimari Notlar:
   Champion (XGBoost) varsayılan modeldir. CatBoost servisi Challenger olarak
   yedekte tutulur; predict_both() ile Champion/Challenger karşılaştırması
-  yapılabilir.
+  yapılabilir
 
   SOLID-D (Dependency Inversion):
     ModelRouter doğrudan InferenceService sınıflarını örneklemek yerine,

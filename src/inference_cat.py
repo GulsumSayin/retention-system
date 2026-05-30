@@ -21,7 +21,7 @@ class CatBoostInferenceService:
 
     Hata Yönetimi:
       - Artifact bulunamazsa FileNotFoundError fırlatılır (app başlamaz).
-      - Pickle bozuksa veya model uyumsuzsa Exception yakalanıp loglanır.
+      - Pickle bozuksa veya model uyumsuzsa Exception yakalanıp loglanır
     """
 
     def __init__(self, artifacts_dir: str = "artifacts/catboost") -> None:

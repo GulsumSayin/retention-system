@@ -21,7 +21,7 @@ Yöntem:
     - Her katsayı sırayla ±%10, ±%20, ±%30 oranında değiştirilir.
     - Diğer katsayılar nominal değerlerinde tutulur.
     - Her senaryo için toplam net fayda ve seçilen müşteri sayısı hesaplanır.
-    - Sonuçlar tornadogram ile görselleştirilir.
+    - Sonuçlar tornadogram ile görselleştirilir
 
 Tez Bölümü:
   "5.3 CLV Katsayıları Duyarlılık Analizi" — sonuçlar bu modülden üretilir.

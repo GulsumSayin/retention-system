@@ -23,7 +23,7 @@ Greedy Yaklaşım (ROI-öncelikli):
   (eşit ROI durumunda mutlak değeri büyük olan tercih edilir).
 
 Maliyet Hesaplama:
-  Tüm aksiyon maliyetleri ACTION_REGISTRY'den okunur (tek kaynak).
+  Tüm aksiyon maliyetleri ACTION_REGISTRY'den okunur (tek kaynak)
   Bilinmeyen aksiyon → 0.0 maliyet → offer_cost filtresiyle elendiğinden
   sessiz hata yerine logger.warning tetiklenir.
 
