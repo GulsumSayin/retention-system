@@ -1,6 +1,6 @@
 """
 tests/test_evaluation.py
-StrategyEvaluator birim testleri.
+StrategyEvaluator birim testleri
 
 Test Kapsamı:
   1. evaluate_agent_strategy — boş girdi güvenliği, metrik doğruluğu

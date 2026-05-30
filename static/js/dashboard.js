@@ -1,5 +1,5 @@
 /**
- * dashboard.js — Müşteri Tutundurma Zekâsı Platformu
+ * dashboard.js — Müşteri Tutundurma Zekâsı Platformu.
  */
 
 "use strict";

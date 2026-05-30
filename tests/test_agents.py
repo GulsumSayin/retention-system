@@ -1,6 +1,6 @@
 """
 tests/test_agents.py
-RetentionAgent ve CLV formülü birim testleri.
+RetentionAgent ve CLV formülü birim testleri
 
 Test Kapsamı:
   1. CLV Formülü — p² tuzağı yok; LTV churn_proba'dan bağımsız

@@ -1,6 +1,6 @@
 """
 tests/test_optimization.py
-RetentionOptimizer birim testleri.
+RetentionOptimizer birim testleri
 
 Test Kapsamı:
   1. ROI sıralaması — en yüksek ROI ilk seçilmeli
