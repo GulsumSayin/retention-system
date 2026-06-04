@@ -418,17 +418,21 @@ class LLMService:
         'gerçek_llm_kullanıldı_mı' en az bir yorumun LLM'den geldiğini gösterir.
         """
         result = df.copy()
-        result[comment_col]  = None
-        result["llm_source"] = "rule"  # varsayılan; LLM bağlantısı olmasa bile geçerli
-        any_real_llm = False
+        result["llm_source"] = "rule"
 
+        # Tüm satırlara önce kural tabanlı yorum ekle
+        for idx, row in result.iterrows():
+            result.at[idx, comment_col] = _rule_based_customer_comment(row)
+
+        # İlk `limit` satır için LLM dene (başarılıysa üzerine yaz)
+        any_real_llm = False
         for i, (idx, row) in enumerate(result.iterrows()):
             if i >= limit:
                 break
             comment, source = self.generate_customer_comment(row)
-            result.at[idx, comment_col]  = comment
-            result.at[idx, "llm_source"] = source
             if source == "ai":
+                result.at[idx, comment_col]  = comment
+                result.at[idx, "llm_source"] = source
                 any_real_llm = True
 
         return result, any_real_llm

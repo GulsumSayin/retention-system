@@ -555,7 +555,7 @@ function renderOptimizedTable(rows) {
   const extra   = buildExtraHeaders(rows, OPT_HEADERS);
   const headers = { ...extra, ...OPT_HEADERS };
   const hasComments = rows.length && rows.some(r => r.llm_comment && String(r.llm_comment).trim());
-  if (hasComments) headers.llm_comment = "🤖 AI Yorumu";
+  if (hasComments) headers.llm_comment = "AI Yorumu";
   renderTable("optimizedTableWrap", rows, headers, formatOptCell);
 }
 
