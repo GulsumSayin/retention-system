@@ -1,3 +1,4 @@
+# r7q1w
 """
 model_router.py
 Model seçim ve yönlendirme katmanı.

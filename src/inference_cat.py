@@ -1,3 +1,4 @@
+# h2c7f
 """
 inference_cat.py
 CatBoost Challenger modeli ile churn olasılığı tahmini

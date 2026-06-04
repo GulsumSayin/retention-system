@@ -1,3 +1,4 @@
+# n8u4y
 """
 llm_service.py
 Müşteri tutundurma platformu — yorum servisi.

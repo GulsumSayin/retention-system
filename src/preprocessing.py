@@ -1,3 +1,4 @@
+# f6l2c
 """
 preprocessing.py
 Veri ön işleme, özellik mühendisliği ve model girdisi hazırlama modülü.

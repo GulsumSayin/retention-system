@@ -1,3 +1,4 @@
+# z1a5k
 """
 llama_server_manager.py
 llama.cpp server'ı otomatik başlatan ve durumunu kontrol eden yardımcı modül.

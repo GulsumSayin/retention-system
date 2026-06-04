@@ -1,5 +1,6 @@
 # Müşteri Tutundurma Zekâsı Platformu — Bağımlılıklar
 # Python >= 3.10 gereklidir (union type hint söz dizimi: X | Y)
+# d7r3b
 #
 # Sürüm politikası: >= alt sınır, < majör sürüm üst sınırı
 # Belirli bir ortamı yeniden oluşturmak için:

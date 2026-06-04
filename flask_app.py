@@ -1,3 +1,4 @@
+# x7k2m
 """
 flask_app.py — Müşteri Tutundurma Zekâsı Platformu (Flask)
 

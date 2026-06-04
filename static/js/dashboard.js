@@ -1,3 +1,4 @@
+// s2e7v
 /**
  * dashboard.js — Müşteri Tutundurma Zekâsı Platformu.
  */

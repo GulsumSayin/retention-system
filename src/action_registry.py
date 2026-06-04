@@ -1,3 +1,4 @@
+# q9p3n
 """
 action_registry.py
 Merkezi aksiyon kataloğu — tek gerçek kaynak (Single Source of Truth)
